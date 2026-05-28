@@ -1,8 +1,9 @@
 from fastapi import FastAPI
+from shopping.router import router as shopping_router
+from core.database import init_db
 
 app = FastAPI()
 
+init_db()
 
-@app.get("/")
-def read_root():
-    return {"message": "Hello FastAPI!"}
+app.include_router(shopping_router)
