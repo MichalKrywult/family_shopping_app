@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
-from fastapi.responses import FileResponse
+from fastapi.responses import RedirectResponse, FileResponse
 
 
 @asynccontextmanager
@@ -39,3 +39,8 @@ app.mount("/public", StaticFiles(directory=CLIENT_DIR / "public"), name="public"
 @app.get("/")
 def read_root():
     return FileResponse(CLIENT_DIR / "index.html")
+
+
+@app.get("/index.html")
+def redirect_to_root():
+    return RedirectResponse(url="/", status_code=307)
