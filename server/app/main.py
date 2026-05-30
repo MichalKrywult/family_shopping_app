@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from shopping.router import router as shopping_router
-from core.database import init_db
+from app.shopping.router import router as shopping_router
+from app.core.database import init_db
 from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi.staticfiles import StaticFiles

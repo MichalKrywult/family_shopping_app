@@ -18,7 +18,7 @@ engine = create_engine(
 def init_db():
     """Inicjalizuje bazę danych i tworzy wszystkie tabele zdefiniowane w models.py"""
     # import models - IMPORRTANT!!!
-    from shopping.models import ShoppingList, Item  # noqa
+    from app.shopping.models import ShoppingList, Item  # noqa
 
     SQLModel.metadata.create_all(engine)
 

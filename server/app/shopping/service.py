@@ -1,5 +1,6 @@
 from sqlmodel import Session, select
-from shopping.models import ShoppingList, Item, Optional
+from app.shopping.models import ShoppingList, Item
+from typing import Optional
 from sqlalchemy.orm import joinedload  # noqa
 
 
