@@ -1,86 +1,66 @@
-from core.database import get_connection
+from sqlmodel import Session, select
+from shopping.models import ShoppingList, Item, Optional
 
 
-def init_shopping_tables():
-    """Initialize tables specific to shopping module."""
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS shopping_lists (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                created_at TEXT DEFAULT CURRENT_TIMESTAMP
-            );
-        """)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS items (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                list_id INTEGER NOT NULL,
-                name TEXT NOT NULL,
-                quantity INTEGER DEFAULT 1,
-                is_done INTEGER DEFAULT 0,
-                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (list_id) REFERENCES shopping_lists(id) ON DELETE CASCADE
-            );
-        """)
-        conn.commit()
+def create_list(session: Session, name: str) -> ShoppingList:
+    """Creates a new shopping list using the ORM."""
+    db_list = ShoppingList(name=name)
+    session.add(db_list)
+    session.commit()
+    session.refresh(db_list)
+    return db_list
 
 
-def create_list(name: str):
-    """Creates a shopping list and returns its ID."""
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO shopping_lists (name) VALUES (?);", (name,))
-        conn.commit()
-        return cursor.lastrowid
+def add_item_to_list(session: Session, list_id: int, name: str, quantity: int) -> Item:
+    """Adds an item to the list using the ORM."""
+    db_item = Item(list_id=list_id, name=name, quantity=quantity)
+    session.add(db_item)
+    session.commit()
+    session.refresh(db_item)
+    return db_item
 
 
-def add_item_to_list(list_id: int, name: str, quantity: int):
-    """Adds an item to a specific shopping list."""
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO items (list_id, name, quantity) VALUES (?, ?, ?);",
-            (list_id, name, quantity),
-        )
-        conn.commit()
+def delete_list(session: Session, list_id: int) -> bool:
+    """Soft Delete dla listy zakupów."""
+    shopping_list = session.get(ShoppingList, list_id)
+    if not shopping_list or shopping_list.is_deleted == 1:
+        return False
+
+    shopping_list.is_deleted = 1
+    session.add(shopping_list)
+    session.commit()
+    return True
 
 
-def get_list_with_items(list_id: int):
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            SELECT 
-                l.id AS list_id, l.name AS list_name, l.created_at AS list_created,
-                i.id AS item_id, i.name AS item_name, i.quantity, i.is_done
-            FROM shopping_lists l
-            LEFT JOIN items i ON l.id = i.list_id
-            WHERE l.id = ?;
-        """,
-            (list_id,),
-        )
+def get_list_with_items(session: Session, list_id: int) -> Optional[ShoppingList]:
+    """Pobiera listę tylko, jeśli nie została miękko usunięta."""
+    statement = select(ShoppingList).where(
+        ShoppingList.id == list_id,
+        ShoppingList.is_deleted == 0, 
+    )
+    result = session.exec(statement).first()
+    return result
 
-        rows = cursor.fetchall()
-        if not rows:
-            return None
 
-        result = {
-            "id": rows[0]["list_id"],
-            "name": rows[0]["list_name"],
-            "created_at": rows[0]["list_created"],
-            "items": [],
-        }
+def mark_item_as_done(session: Session, item_id: int) -> Optional[Item]:
+    """Marks an item as done. Returns None if item not found."""
+    item = session.get(Item, item_id)
+    if not item:
+        return None
 
-        for row in rows:
-            if row["item_id"] is not None:
-                result["items"].append(
-                    {
-                        "id": row["item_id"],
-                        "name": row["item_name"],
-                        "quantity": row["quantity"],
-                        "is_done": row["is_done"],
-                    }
-                )
+    item.is_done = 1
+    session.add(item)
+    session.commit()
+    session.refresh(item)
+    return item
 
-        return result
+
+def delete_item(session: Session, item_id: int) -> bool:
+    """Deletes an item from list. Returns True if success, False if not found."""
+    item = session.get(Item, item_id)
+    if not item:
+        return False
+
+    session.delete(item)
+    session.commit()
+    return True
