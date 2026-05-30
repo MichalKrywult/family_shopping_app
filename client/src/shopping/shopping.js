@@ -33,3 +33,7 @@ export async function toggleItemDone(itemId) {
 export async function deleteItem(itemId) {
     return await apiRequest(`/shopping/items/${itemId}`, 'DELETE');
 }
+
+export async function deleteList(listId) {
+    return await apiRequest(`/shopping/${listId}`, 'DELETE');
+}

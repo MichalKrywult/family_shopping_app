@@ -38,7 +38,11 @@
     </div>
 
     <div class="card" id="currentListCard" style="display:none;">
-        <h2 id="currentListName">My List</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 id="currentListName" style="margin: 0;">My List</h2>
+            <button id="deleteListBtn" class="delete-btn" style="margin: 0; padding: 8px 12px;">Delete Board</button>
+        </div>
+        
         <div style="margin-bottom: 15px; display: flex; gap: 10px;">
             <input type="text" id="itemName" placeholder="Product" style="flex: 3;">
             <input type="number" id="itemQty" value="1" min="1" style="flex: 1;">
@@ -73,7 +77,6 @@
         // render active items in list
         async function renderItems() {
             const listData = await shoppingService.loadListItems();
-            console.log("Dane odebrane z backendu dla tej listy:", listData);
             const container = document.getElementById('itemsContainer');
             container.innerHTML = '';
 
@@ -105,6 +108,20 @@
             shoppingService.setCurrentListId(listId);
             document.getElementById('currentListName').innerText = `Board: ${listName}`;
             document.getElementById('currentListCard').style.display = 'block';
+            
+            const deleteBtn = document.getElementById('deleteListBtn');
+            deleteBtn.onclick = async () => {
+                if (!confirm(`Are you sure you want to delete the entire board "${listName}"?`)) return;
+
+                await shoppingService.deleteList(listId);
+
+                document.getElementById('currentListCard').style.display = 'none';
+                shoppingService.setCurrentListId(null);
+
+                await renderListsDashboard();
+            };
+
+
             await renderItems();
         };
 
