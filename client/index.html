@@ -11,12 +11,17 @@
 </head>
 <body>
 
+    <div class="bottom-nav" id="bottomNav">
+        <button onclick="switchMobileView('sidebar')" id="navBtnSidebar" class="nav-item active">📋 Boards</button>
+        <button onclick="switchMobileView('main')" id="navBtnMain" class="nav-item">🛒 Active List</button>
+    </div>
+
     <div class="sidebar">
         <h3>📋 Boards</h3>
         <div id="listsDashboard" style="flex: 1; overflow-y: auto;"></div>
         
         <div id="createListForm">
-            <input type="text" id="listName" placeholder="New board name..." style="width: 100%; margin-bottom: 8px;">
+            <input type="text" id="listName" class="input-field" placeholder="New board name..." style="margin-bottom: 8px;">
             <button onclick="handleCreateList()" style="width: 100%;">+ Create List</button>
         </div>
     </div>
@@ -36,8 +41,8 @@
                 </div>
                 
                 <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-                    <input type="text" id="itemName" placeholder="What do you need?" style="flex: 3;">
-                    <input type="number" id="itemQty" value="1" min="1" style="flex: 1;">
+                    <input type="text" id="itemName" class="input-field" placeholder="Type..." style="flex: 3;">
+                    <input type="number" id="itemQty" class="input-field" value="1" min="1" style="flex: 1;">
                     <button onclick="handleAddItem()" style="flex: 1;">Add</button>
                 </div>
                 <div id="itemsContainer"></div>
@@ -82,7 +87,7 @@
                 
                 div.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="window.handleToggleItem(${item.id})">
-                        <input type="checkbox" ${isChecked} style="cursor: pointer; width: 16px; height: 16px;">
+                        <input type="checkbox" ${isChecked} style="cursor: pointer; width: 16px; height: 16px; pointer-events: none;">
                         <span class="${item.is_done ? 'done' : ''}" style="font-size: 15px;">
                             ${item.name} <strong style="color: var(--muted); font-size: 13px;">x${item.quantity}</strong>
                         </span>
@@ -108,9 +113,17 @@
                 document.getElementById('blankState').style.display = 'block';
                 shoppingService.setCurrentListId(null);
                 await renderListsDashboard();
+                
+                if (window.innerWidth <= 768) {
+                    window.switchMobileView('sidebar');
+                }
             };
 
             await renderItems();
+
+            if (window.innerWidth <= 768) {
+                window.switchMobileView('main');
+            }
         };
 
         window.handleCreateList = async () => {
@@ -146,8 +159,30 @@
             await renderItems();
         };
 
+        window.switchMobileView = (view) => {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            const btnSidebar = document.getElementById('navBtnSidebar');
+            const btnMain = document.getElementById('navBtnMain');
+
+            if (view === 'sidebar') {
+                sidebar.classList.add('active-mobile');
+                mainContent.classList.remove('active-mobile');
+                btnSidebar.classList.add('active');
+                btnMain.classList.remove('active');
+            } else {
+                sidebar.classList.remove('active-mobile');
+                mainContent.classList.add('active-mobile');
+                btnSidebar.classList.remove('active');
+                btnMain.classList.add('active');
+            }
+        };
+
         async function init() {
             await renderListsDashboard();
+            if (window.innerWidth <= 768) {
+                window.switchMobileView('sidebar');
+            }
         }
 
         init();
