@@ -1,0 +1,17 @@
+{
+  "short_name": "Shopping",
+  "name": "Shopping List App",
+  "icons": [
+    {
+      "src": "./assets/icon.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "../index.html",
+  "background_color": "#f4f4f9",
+  "theme_color": "#28a745",
+  "display": "standalone",
+  "orientation": "portrait"
+}

@@ -62,3 +62,9 @@ def delete_shopping_list(list_id: int, session: Session = Depends(get_session)):
             status_code=404, detail="Shopping list not found or already deleted"
         )
     return {"message": "Shopping list deleted successfully (Soft Delete)"}
+
+
+@router.get("/")
+def get_all_lists(session: Session = Depends(get_session)):
+    """Returns all lists."""
+    return service.get_all_lists(session)

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shopping Boards</title>
+    <link rel="manifest" href="public/manifest.json">
+    <meta name="theme-color" content="#28a745">
+    <link rel="icon" type="image/x-icon" href="public/assets/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; background: #f4f4f9; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input, button { padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #28a745; color: white; border: none; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #218838; }
+        
+        /* Style list nawigacyjnych */
+        .list-selector { display: block; width: 100%; padding: 12px; margin: 8px 0; background: #e9ecef; text-align: left; border-radius: 6px; font-weight: bold; color: #495057; }
+        .list-selector:hover { background: #dee2e6; color: #212529; }
+        
+        .item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
+        .done { text-decoration: line-through; color: #888; }
+        .delete-btn { background: #dc3545; padding: 5px 10px; }
+        .delete-btn:hover { background: #bd2130; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>My Shopping Boards</h2>
+        <div id="listsDashboard"></div>
+        
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        
+        <h3>Create a new list</h3>
+        <input type="text" id="listName" placeholder="List name (e.g. Home)" style="width: calc(100% - 24px);">
+        <button onclick="handleCreateList()" style="width: 100%;">Create Board</button>
+    </div>
+
+    <div class="card" id="currentListCard" style="display:none;">
+        <h2 id="currentListName">My List</h2>
+        <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+            <input type="text" id="itemName" placeholder="Product" style="flex: 3;">
+            <input type="number" id="itemQty" value="1" min="1" style="flex: 1;">
+            <button onclick="handleAddItem()" style="flex: 1;">Add</button>
+        </div>
+        <div id="itemsContainer"></div>
+    </div>
+
+    <script type="module">
+        import * as shoppingService from './src/shopping/shopping.js';
+
+        // render all lists
+        async function renderListsDashboard() {
+            const lists = await shoppingService.getAllLists();
+            const container = document.getElementById('listsDashboard');
+            container.innerHTML = '';
+
+            if (!lists || lists.length === 0) {
+                container.innerHTML = '<p style="color: #6c757d; font-style: italic;">No shopping lists found. Create one below!</p>';
+                return;
+            }
+
+            lists.forEach(list => {
+                const button = document.createElement('button');
+                button.className = 'list-selector';
+                button.innerText = `📋 ${list.name}`;
+                button.onclick = () => window.handleSelectList(list.id, list.name);
+                container.appendChild(button);
+            });
+        }
+
+        // render active items in list
+        async function renderItems() {
+            const listData = await shoppingService.loadListItems();
+            console.log("Dane odebrane z backendu dla tej listy:", listData);
+            const container = document.getElementById('itemsContainer');
+            container.innerHTML = '';
+
+            if (!listData || !listData.items) return;
+
+            listData.items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.innerHTML = `
+                    <span class="${item.is_done ? 'done' : ''}" onclick="window.handleToggleItem(${item.id})" style="cursor:pointer;">
+                        ${item.name} x${item.quantity}
+                    </span>
+                    <button class="delete-btn" onclick="window.handleDeleteItem(${item.id})">X</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // global
+
+        window.handleSelectList = async (listId, listName) => {
+            shoppingService.setCurrentListId(listId);
+            document.getElementById('currentListName').innerText = `Board: ${listName}`;
+            document.getElementById('currentListCard').style.display = 'block';
+            await renderItems();
+        };
+
+        window.handleCreateList = async () => {
+            const name = document.getElementById('listName').value;
+            if (!name) return alert('Enter a list name!');
+            
+            const list = await shoppingService.createNewList(name);
+            document.getElementById('listName').value = '';
+            
+            await renderListsDashboard();
+            await window.handleSelectList(list.id, list.name);
+        };
+
+        window.handleAddItem = async () => {
+            const name = document.getElementById('itemName').value;
+            const qty = document.getElementById('itemQty').value;
+            if (!name) return alert('Enter a product name!');
+
+            await shoppingService.addItemToCurrentList(name, parseInt(qty));
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemQty').value = '1';
+            await renderItems();
+        };
+
+        window.handleToggleItem = async (itemId) => {
+            await shoppingService.toggleItemDone(itemId);
+            await renderItems();
+        };
+
+        window.handleDeleteItem = async (itemId) => {
+            if (!confirm('Are you sure you want to delete this item?')) return;
+            await shoppingService.deleteItem(itemId);
+            await renderItems();
+        };
+
+        // init app every time the page is loaded
+        async function init() {
+            await renderListsDashboard();
+        }
+
+        init();
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('public/sw.js')
+                    .then(reg => console.log('PWA Service Worker registered!'))
+                    .catch(err => console.error('PWA Error:', err));
+            });
+        }
+    </script>
+</body>
+</html>

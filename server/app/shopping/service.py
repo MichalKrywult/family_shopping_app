@@ -1,5 +1,6 @@
 from sqlmodel import Session, select
 from shopping.models import ShoppingList, Item, Optional
+from sqlalchemy.orm import joinedload  # noqa
 
 
 def create_list(session: Session, name: str) -> ShoppingList:
@@ -32,14 +33,26 @@ def delete_list(session: Session, list_id: int) -> bool:
     return True
 
 
-def get_list_with_items(session: Session, list_id: int) -> Optional[ShoppingList]:
-    """Pobiera listę tylko, jeśli nie została miękko usunięta."""
-    statement = select(ShoppingList).where(
-        ShoppingList.id == list_id,
-        ShoppingList.is_deleted == 0, 
+def get_list_with_items(session: Session, list_id: int) -> Optional[dict]:
+    """Returns items of list, in hash map."""
+    statement_list = select(ShoppingList).where(
+        ShoppingList.id == list_id, ShoppingList.is_deleted == 0
     )
-    result = session.exec(statement).first()
-    return result
+    shopping_list = session.exec(statement_list).first()
+
+    if not shopping_list:
+        return None
+
+    statement_items = select(Item).where(Item.list_id == list_id)
+    items = session.exec(statement_items).all()
+
+    return {
+        "id": shopping_list.id,
+        "name": shopping_list.name,
+        "is_deleted": shopping_list.is_deleted,
+        "created_at": shopping_list.created_at,
+        "items": items,
+    }
 
 
 def mark_item_as_done(session: Session, item_id: int) -> Optional[Item]:
@@ -64,3 +77,9 @@ def delete_item(session: Session, item_id: int) -> bool:
     session.delete(item)
     session.commit()
     return True
+
+
+def get_all_lists(session: Session) -> list[ShoppingList]:
+    """Returns all lists."""
+    statement = select(ShoppingList).where(ShoppingList.is_deleted == 0)
+    return session.exec(statement).all()

@@ -72,3 +72,9 @@ uvicorn app.main:app --reload
 ### 5. Open the interactive API documentation
 
 👉 http://127.0.0.1:8000/docs
+
+
+### IMPORTANT! Make sure to replace `http://127.0.0.1:8000` with your actual server URL in the frontend part (client). Add config.js in core dict and set it with:
+```js
+export const API_URL = "YOUR_URL_HERE";
+```
