@@ -1,4 +1,4 @@
-import { API_URL } from "./config.js";
+const API_URL = "";
 
 export async function apiRequest(endpoint, method = "GET", body = null) {
     const options = { method };

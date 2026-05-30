@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  shopping-app:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: shopping_list_container
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./server/data:/code/data          
+      - ./client:/client                  
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
