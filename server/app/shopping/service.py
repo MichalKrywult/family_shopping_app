@@ -55,13 +55,17 @@ def get_list_with_items(session: Session, list_id: int) -> Optional[dict]:
     }
 
 
-def mark_item_as_done(session: Session, item_id: int) -> Optional[Item]:
-    """Marks an item as done. Returns None if item not found."""
+def toggle_item_status(session: Session, item_id: int) -> Optional[Item]:
+    """Toggles item state (0 -> 1, 1 -> 0)."""
     item = session.get(Item, item_id)
     if not item:
         return None
 
-    item.is_done = 1
+    if item.is_done == 0:
+        item.is_done = 1
+    else:
+        item.is_done = 0
+
     session.add(item)
     session.commit()
     session.refresh(item)
@@ -82,4 +86,4 @@ def delete_item(session: Session, item_id: int) -> bool:
 def get_all_lists(session: Session) -> list[ShoppingList]:
     """Returns all lists."""
     statement = select(ShoppingList).where(ShoppingList.is_deleted == 0)
-    return session.exec(statement).all()
+    return list(session.exec(statement).all())

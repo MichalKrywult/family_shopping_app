@@ -80,16 +80,23 @@
             if (!listData || !listData.items) return;
 
             listData.items.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'item';
-                div.innerHTML = `
-                    <span class="${item.is_done ? 'done' : ''}" onclick="window.handleToggleItem(${item.id})" style="cursor:pointer;">
+            const div = document.createElement('div');
+            div.className = 'item';
+            
+            // Generujemy dynamicznie checkbox w zależności od statusu is_done
+            const isChecked = item.is_done ? 'checked' : '';
+            
+            div.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="window.handleToggleItem(${item.id})">
+                    <input type="checkbox" ${isChecked} style="cursor: pointer;">
+                    <span class="${item.is_done ? 'done' : ''}">
                         ${item.name} x${item.quantity}
                     </span>
-                    <button class="delete-btn" onclick="window.handleDeleteItem(${item.id})">X</button>
-                `;
-                container.appendChild(div);
-            });
+                </div>
+                <button class="delete-btn" onclick="window.handleDeleteItem(${item.id})">X</button>
+            `;
+            container.appendChild(div);
+        });
         }
 
         // global

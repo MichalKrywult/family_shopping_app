@@ -38,7 +38,7 @@ def get_list(list_id: int, session: Session = Depends(get_session)):
 @router.put("/items/{item_id}/done")
 def mark_item_as_done(item_id: int, session: Session = Depends(get_session)):
     """Marks an item as done."""
-    updated_item = service.mark_item_as_done(session, item_id)
+    updated_item = service.toggle_item_status(session, item_id)
     if not updated_item:
         raise HTTPException(status_code=404, detail="Item not found")
     return {"message": "Item marked as done successfully", "item": updated_item}
