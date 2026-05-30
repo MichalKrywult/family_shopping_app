@@ -7,74 +7,67 @@
     <meta name="theme-color" content="#28a745">
     <link rel="icon" type="image/x-icon" href="public/assets/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; background: #f4f4f9; color: #333; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        input, button { padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; }
-        button { background: #28a745; color: white; border: none; cursor: pointer; transition: background 0.2s; }
-        button:hover { background: #218838; }
-        
-        /* Style list nawigacyjnych */
-        .list-selector { display: block; width: 100%; padding: 12px; margin: 8px 0; background: #e9ecef; text-align: left; border-radius: 6px; font-weight: bold; color: #495057; }
-        .list-selector:hover { background: #dee2e6; color: #212529; }
-        
-        .item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
-        .done { text-decoration: line-through; color: #888; }
-        .delete-btn { background: #dc3545; padding: 5px 10px; }
-        .delete-btn:hover { background: #bd2130; }
-    </style>
+    <link rel="stylesheet" href="public/css/style.css">
 </head>
 <body>
 
-    <div class="card">
-        <h2>My Shopping Boards</h2>
-        <div id="listsDashboard"></div>
+    <div class="sidebar">
+        <h3>📋 Boards</h3>
+        <div id="listsDashboard" style="flex: 1; overflow-y: auto;"></div>
         
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-        
-        <h3>Create a new list</h3>
-        <input type="text" id="listName" placeholder="List name (e.g. Home)" style="width: calc(100% - 24px);">
-        <button onclick="handleCreateList()" style="width: 100%;">Create Board</button>
+        <div id="createListForm">
+            <input type="text" id="listName" placeholder="New board name..." style="width: 100%; margin-bottom: 8px;">
+            <button onclick="handleCreateList()" style="width: 100%;">+ Create List</button>
+        </div>
     </div>
 
-    <div class="card" id="currentListCard" style="display:none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 id="currentListName" style="margin: 0;">My List</h2>
-            <button id="deleteListBtn" class="delete-btn" style="margin: 0; padding: 8px 12px;">Delete Board</button>
+    <div class="main-content">
+        <div class="container">
+            
+            <div id="blankState" class="card" style="text-align: center; color: var(--muted);">
+                <h2>Welcome to Shopping Boards!</h2>
+                <p>Select a board from the sidebar or create a new one to start shopping.</p>
+            </div>
+
+            <div class="card" id="currentListCard" style="display:none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h2 id="currentListName" style="margin: 0;">My List</h2>
+                    <button id="deleteListBtn" class="delete-btn">Delete Board</button>
+                </div>
+                
+                <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                    <input type="text" id="itemName" placeholder="What do you need?" style="flex: 3;">
+                    <input type="number" id="itemQty" value="1" min="1" style="flex: 1;">
+                    <button onclick="handleAddItem()" style="flex: 1;">Add</button>
+                </div>
+                <div id="itemsContainer"></div>
+            </div>
+
         </div>
-        
-        <div style="margin-bottom: 15px; display: flex; gap: 10px;">
-            <input type="text" id="itemName" placeholder="Product" style="flex: 3;">
-            <input type="number" id="itemQty" value="1" min="1" style="flex: 1;">
-            <button onclick="handleAddItem()" style="flex: 1;">Add</button>
-        </div>
-        <div id="itemsContainer"></div>
     </div>
 
     <script type="module">
         import * as shoppingService from './src/shopping/shopping.js';
 
-        // render all lists
         async function renderListsDashboard() {
             const lists = await shoppingService.getAllLists();
             const container = document.getElementById('listsDashboard');
             container.innerHTML = '';
 
             if (!lists || lists.length === 0) {
-                container.innerHTML = '<p style="color: #6c757d; font-style: italic;">No shopping lists found. Create one below!</p>';
+                container.innerHTML = '<p style="color: var(--muted); font-style: italic; font-size: 13px;">No boards found.</p>';
                 return;
             }
 
             lists.forEach(list => {
                 const button = document.createElement('button');
                 button.className = 'list-selector';
-                button.innerText = `📋 ${list.name}`;
+                button.innerText = `📦 ${list.name}`;
                 button.onclick = () => window.handleSelectList(list.id, list.name);
                 container.appendChild(button);
             });
         }
 
-        // render active items in list
         async function renderItems() {
             const listData = await shoppingService.loadListItems();
             const container = document.getElementById('itemsContainer');
@@ -83,51 +76,46 @@
             if (!listData || !listData.items) return;
 
             listData.items.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'item';
-            
-            // Generujemy dynamicznie checkbox w zależności od statusu is_done
-            const isChecked = item.is_done ? 'checked' : '';
-            
-            div.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="window.handleToggleItem(${item.id})">
-                    <input type="checkbox" ${isChecked} style="cursor: pointer;">
-                    <span class="${item.is_done ? 'done' : ''}">
-                        ${item.name} x${item.quantity}
-                    </span>
-                </div>
-                <button class="delete-btn" onclick="window.handleDeleteItem(${item.id})">X</button>
-            `;
-            container.appendChild(div);
-        });
+                const div = document.createElement('div');
+                div.className = 'item';
+                const isChecked = item.is_done ? 'checked' : '';
+                
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="window.handleToggleItem(${item.id})">
+                        <input type="checkbox" ${isChecked} style="cursor: pointer; width: 16px; height: 16px;">
+                        <span class="${item.is_done ? 'done' : ''}" style="font-size: 15px;">
+                            ${item.name} <strong style="color: var(--muted); font-size: 13px;">x${item.quantity}</strong>
+                        </span>
+                    </div>
+                    <button class="delete-btn" onclick="window.handleDeleteItem(${item.id})">X</button>
+                `;
+                container.appendChild(div);
+            });
         }
-
-        // global
 
         window.handleSelectList = async (listId, listName) => {
             shoppingService.setCurrentListId(listId);
-            document.getElementById('currentListName').innerText = `Board: ${listName}`;
+            document.getElementById('blankState').style.display = 'none';
+            document.getElementById('currentListName').innerText = listName;
             document.getElementById('currentListCard').style.display = 'block';
             
             const deleteBtn = document.getElementById('deleteListBtn');
             deleteBtn.onclick = async () => {
-                if (!confirm(`Are you sure you want to delete the entire board "${listName}"?`)) return;
-
+                if (!confirm(`Are you sure you want to delete board "${listName}"?`)) return;
                 await shoppingService.deleteList(listId);
-
+                
                 document.getElementById('currentListCard').style.display = 'none';
+                document.getElementById('blankState').style.display = 'block';
                 shoppingService.setCurrentListId(null);
-
                 await renderListsDashboard();
             };
-
 
             await renderItems();
         };
 
         window.handleCreateList = async () => {
             const name = document.getElementById('listName').value;
-            if (!name) return alert('Enter a list name!');
+            if (!name) return alert('Enter a board name!');
             
             const list = await shoppingService.createNewList(name);
             document.getElementById('listName').value = '';
@@ -153,12 +141,11 @@
         };
 
         window.handleDeleteItem = async (itemId) => {
-            if (!confirm('Are you sure you want to delete this item?')) return;
+            if (!confirm('Delete this item?')) return;
             await shoppingService.deleteItem(itemId);
             await renderItems();
         };
 
-        // init app every time the page is loaded
         async function init() {
             await renderListsDashboard();
         }

@@ -1,0 +1,79 @@
+:root {
+    --primary: #28a745;
+    --primary-hover: #218838;
+    --danger: #dc3545;
+    --danger-hover: #bd2130;
+    --bg: #f4f4f9;
+    --surface: #ffffff;
+    --text: #333333;
+    --muted: #6c757d;
+    --border: #e9ecef;
+}
+
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; 
+    margin: 0; 
+    padding: 0; 
+    background: var(--bg); 
+    color: var(--text);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.main-content {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+}
+
+h2, h3 { margin-top: 0; }
+input, button { padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box; }
+
+button { background: var(--primary); color: white; border: none; cursor: pointer; transition: background 0.2s; font-weight: bold; }
+button:hover { background: var(--primary-hover); }
+
+.list-selector { 
+    display: block; width: 100%; padding: 12px; margin: 6px 0; 
+    background: var(--bg); text-align: left; border: none; 
+    border-radius: 6px; font-weight: 600; color: #495057; 
+}
+.list-selector:hover { background: #dee2e6; color: #212529; }
+
+.card { background: var(--surface); padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+
+.item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--border); align-items: center; }
+.done { text-decoration: line-through; color: var(--muted); }
+
+.delete-btn { background: var(--danger); padding: 6px 12px; font-size: 12px; }
+.delete-btn:hover { background: var(--danger-hover); }
+
+#createListForm {
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+    padding-top: 15px;
+}
+
+@media (max-width: 768px) {
+    body { flex-direction: column; height: auto; overflow: auto; }
+    .sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+    .main-content { padding: 20px; }
+}
