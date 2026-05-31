@@ -79,23 +79,30 @@
             container.innerHTML = '';
 
             if (!listData || !listData.items) return;
+                listData.items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'item';
+                    const isChecked = item.is_done ? 'checked' : '';
+                    
+                    div.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 10px;">
+                        
+                        <div style="display: flex; align-items: center; gap: 12px; cursor: pointer; flex: 1; min-width: 0;" onclick="window.handleToggleItem(${item.id})">
+                            <input type="checkbox" ${isChecked} style="cursor: pointer; width: 18px; height: 18px; pointer-events: none; flex-shrink: 0;">
+                            <span class="${item.is_done ? 'done' : ''}" style="font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                ${item.name} <strong style="color: var(--muted); font-size: 13px;">x${item.quantity}</strong>
+                            </span>
+                        </div>
+                        
+                        <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                            <button class="edit-btn" onclick="window.handleEditItemName(null, ${item.id})">✏️</button>
+                            <button class="delete-btn" onclick="window.handleDeleteItem(null, ${item.id})">X</button>
+                        </div>
 
-            listData.items.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'item';
-                const isChecked = item.is_done ? 'checked' : '';
-                
-                div.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="window.handleToggleItem(${item.id})">
-                        <input type="checkbox" ${isChecked} style="cursor: pointer; width: 16px; height: 16px; pointer-events: none;">
-                        <span class="${item.is_done ? 'done' : ''}" style="font-size: 15px;">
-                            ${item.name} <strong style="color: var(--muted); font-size: 13px;">x${item.quantity}</strong>
-                        </span>
                     </div>
-                    <button class="delete-btn" onclick="window.handleDeleteItem(${item.id})">X</button>
-                `;
-                container.appendChild(div);
-            });
+                    `;
+                    container.appendChild(div);
+                });
         }
 
         window.handleSelectList = async (listId, listName) => {
@@ -153,7 +160,19 @@
             await renderItems();
         };
 
-        window.handleDeleteItem = async (itemId) => {
+        window.handleEditItemName = async (event, itemId) => {
+            if (event) event.stopPropagation(); 
+            
+            const newName = prompt("Enter new item name:");
+            if (!newName || newName.trim() === "") return;
+
+            await shoppingService.editItemName(itemId, newName.trim());
+            await renderItems();
+        };
+
+        window.handleDeleteItem = async (event, itemId) => {
+            if (event) event.stopPropagation()
+            
             if (!confirm('Delete this item?')) return;
             await shoppingService.deleteItem(itemId);
             await renderItems();

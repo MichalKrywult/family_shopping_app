@@ -88,6 +88,9 @@ button:hover { background: var(--primary-hover); }
 .delete-btn { background: var(--danger); padding: 6px 12px; font-size: 12px; }
 .delete-btn:hover { background: var(--danger-hover); }
 
+.edit-btn { background: var(--primary); padding: 6px 12px; font-size: 12px; }
+.edit-btn:hover { background: var(--primary-hover); }
+
 #createListForm {
     margin-top: auto;
     border-top: 1px solid var(--border);
@@ -183,5 +186,10 @@ input:focus,
     #createListForm {
         margin-top: 20px;
         margin-bottom: 20px;
+    }
+
+    .edit-btn, .delete-btn {
+        padding: 12px 16px; 
+        font-size: 16px;   
     }
 }

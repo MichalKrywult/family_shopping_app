@@ -73,6 +73,21 @@ def toggle_item_status(session: Session, item_id: int) -> Optional[Item]:
     return item
 
 
+def edit_item_name(session: Session, item_id: int, name: str) -> bool:
+    """Edits item name."""
+    item = session.get(Item, item_id)
+    if not item:
+        return False
+
+    item.name = name
+    item.is_done = 0  # noqa if name of the item is changed, assume that it should not be toggled
+
+    session.add(item)
+    session.commit()
+    session.refresh(item)
+    return True
+
+
 def delete_item(session: Session, item_id: int) -> bool:
     """Deletes an item from list. Returns True if success, False if not found."""
     item = session.get(Item, item_id)

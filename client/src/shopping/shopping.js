@@ -34,6 +34,10 @@ export async function deleteItem(itemId) {
     return await apiRequest(`/shopping/items/${itemId}`, 'DELETE');
 }
 
+export async function editItemName(itemId, name) {
+    return await apiRequest(`/shopping/items/${itemId}?name=${encodeURIComponent(name)}`,"PUT");
+}
+
 export async function deleteList(listId) {
     return await apiRequest(`/shopping/${listId}`, 'DELETE');
 }

@@ -28,11 +28,18 @@ def get_list(list_id: int, session: Session = Depends(get_session)):
     """Retrieves a shopping list along with its items."""
 
     result = service.get_list_with_items(session, list_id)
-
     if not result:
         raise HTTPException(status_code=404, detail="Shopping list not found")
-
     return result
+
+
+@router.put("/items/{item_id}")
+def edit_item_name(item_id: int, name: str, session: Session = Depends(get_session)):
+    """Edits item name."""
+    success = service.edit_item_name(session, item_id, name)
+    if not success:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return {"message": "Item name edited successfully"} 
 
 
 @router.put("/items/{item_id}/done")
