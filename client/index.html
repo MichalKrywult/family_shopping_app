@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#28a745">
     <link rel="icon" type="image/x-icon" href="public/assets/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="public/css/style.css">
+    <link rel="stylesheet" href="src/css/style.css">
 </head>
 <body>
 
@@ -18,52 +18,53 @@
 
     <div class="sidebar">
         <h3>📋 Boards</h3>
-        <div id="listsDashboard" style="flex: 1; overflow-y: auto;"></div>
+        <div id="listsDashboard"></div>
         
         <div id="createListForm">
-            <input type="text" id="listName" class="input-field" placeholder="New board name..." style="margin-bottom: 8px;">
-            <button onclick="handleCreateList()" style="width: 100%;">+ Create List</button>
+            <input type="text" id="listName" class="input-field mb-8" placeholder="New board name...">
+            <button onclick="handleCreateList()" class="w-100">+ Create List</button>
         </div>
     </div>
 
     <div class="main-content">
         <div class="container">
             
-            <div id="blankState" class="card" style="text-align: center; color: var(--muted);">
+            <div id="blankState" class="card text-center text-muted">
                 <h2>Welcome to Shopping Boards!</h2>
                 <p>Select a board from the sidebar or create a new one to start shopping.</p>
             </div>
 
-            <div class="card" id="currentListCard" style="display:none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                    <h2 id="currentListName" style="margin: 0;">My List</h2>
+            <div class="card" id="currentListCard">
+                <div class="list-header-row">
+                    <h2 id="currentListName" class="m-0">My List</h2>
                     <button id="deleteListBtn" class="delete-btn">Delete Board</button>
                 </div>
                 
-                <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-                    <input type="text" id="itemName" class="input-field" placeholder="Type..." style="flex: 3;">
-                    <input type="number" id="itemQty" class="input-field" value="1" min="1" style="flex: 1;">
-                    <button onclick="handleAddItem()" style="flex: 1;">Add</button>
+                <div class="add-item-row">
+                    <input type="text" id="itemName" class="input-field flex-3" placeholder="Type...">
+                    <input type="number" id="itemQty" class="input-field flex-1" value="1" min="1">
+                    <button onclick="handleAddItem()" class="flex-1">Add</button>
                 </div>
                 <div id="itemsContainer"></div>
             </div>
 
         </div>
     </div>
-    <div id="editModal" class="modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
-        <div class="card" style="width: 90%; max-width: 400px; background: white; padding: 20px; border-radius: 8px;">
+
+    <div id="editModal" class="modal">
+        <div class="modal-content-card">
             <h3>✏️ Edit Item</h3>
             <input type="hidden" id="editItemId">
-            <div style="margin-bottom: 15px;">
-                <label style="display:block; margin-bottom: 5px; font-size: 13px;">Product Name</label>
-                <input type="text" id="editItemNameInput" class="input-field" style="width: 100%;">
+            <div class="mb-15">
+                <label class="modal-label">Product Name</label>
+                <input type="text" id="editItemNameInput" class="input-field w-100">
             </div>
-            <div style="margin-bottom: 20px;">
-                <label style="display:block; margin-bottom: 5px; font-size: 13px;">Quantity</label>
-                <input type="number" id="editItemQtyInput" class="input-field" min="1" style="width: 100%;">
+            <div class="mb-20">
+                <label class="modal-label">Quantity</label>
+                <input type="number" id="editItemQtyInput" class="input-field w-100" min="1">
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button onclick="window.closeEditModal()" class="delete-btn" style="background: #6c757d;">Cancel</button>
+            <div class="modal-actions">
+                <button onclick="window.closeEditModal()" class="delete-btn cancel-btn">Cancel</button>
                 <button onclick="window.saveEditItem()">Save Changes</button>
             </div>
         </div>
@@ -78,7 +79,7 @@
             container.innerHTML = '';
 
             if (!lists || lists.length === 0) {
-                container.innerHTML = '<p style="color: var(--muted); font-style: italic; font-size: 13px;">No boards found.</p>';
+                container.innerHTML = '<p class="text-muted font-italic font-sm">No boards found.</p>';
                 return;
             }
 
@@ -108,7 +109,7 @@
                         <div style="display: flex; align-items: center; gap: 12px; cursor: pointer; flex: 1; min-width: 0;" onclick="window.handleToggleItem(${item.id})">
                             <input type="checkbox" ${isChecked} style="cursor: pointer; width: 18px; height: 18px; pointer-events: none; flex-shrink: 0;">
                             <span class="${item.is_done ? 'done' : ''}" style="font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                ${item.name} <strong style="color: var(--muted); font-size: 13px;">x${item.quantity}</strong>
+                                ${item.name} <strong class="text-muted font-sm">x${item.quantity}</strong>
                             </span>
                         </div>
                         
