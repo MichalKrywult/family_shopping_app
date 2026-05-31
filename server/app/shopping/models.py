@@ -32,7 +32,8 @@ class ShoppingListCreate(SQLModel):
 
 
 class ItemUpdate(SQLModel):
-    name: str
+    name: Optional[str] = None
+    quantity: Optional[int] = None
 
 
 class ItemCreate(SQLModel):

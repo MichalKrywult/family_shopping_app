@@ -50,6 +50,24 @@
 
         </div>
     </div>
+    <div id="editModal" class="modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div class="card" style="width: 90%; max-width: 400px; background: white; padding: 20px; border-radius: 8px;">
+            <h3>✏️ Edit Item</h3>
+            <input type="hidden" id="editItemId">
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom: 5px; font-size: 13px;">Product Name</label>
+                <input type="text" id="editItemNameInput" class="input-field" style="width: 100%;">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display:block; margin-bottom: 5px; font-size: 13px;">Quantity</label>
+                <input type="number" id="editItemQtyInput" class="input-field" min="1" style="width: 100%;">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="window.closeEditModal()" class="delete-btn" style="background: #6c757d;">Cancel</button>
+                <button onclick="window.saveEditItem()">Save Changes</button>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         import * as shoppingService from './src/shopping/shopping.js';
@@ -95,7 +113,7 @@
                         </div>
                         
                         <div style="display: flex; gap: 8px; flex-shrink: 0;">
-                            <button class="edit-btn" onclick="window.handleEditItemName(null, ${item.id})">✏️</button>
+                            <button class="edit-btn" onclick="window.handleEditItem(event, ${item.id}, '${item.name}', ${item.quantity})">✏️</button>
                             <button class="delete-btn" onclick="window.handleDeleteItem(null, ${item.id})">X</button>
                         </div>
 
@@ -160,13 +178,33 @@
             await renderItems();
         };
 
-        window.handleEditItemName = async (event, itemId) => {
+        window.handleEditItem = (event, itemId, currentName, currentQty) => {
             if (event) event.stopPropagation(); 
             
-            const newName = prompt("Enter new item name:");
-            if (!newName || newName.trim() === "") return;
+            document.getElementById('editItemId').value = itemId;
+            document.getElementById('editItemNameInput').value = currentName;
+            document.getElementById('editItemQtyInput').value = currentQty;
+            
+            document.getElementById('editModal').style.display = 'flex';
+        };
 
-            await shoppingService.editItemName(itemId, newName.trim());
+        window.closeEditModal = () => {
+            document.getElementById('editModal').style.display = 'none';
+        };
+
+
+        window.saveEditItem = async () => {
+            const itemId = document.getElementById('editItemId').value;
+            const newName = document.getElementById('editItemNameInput').value;
+            const newQty = document.getElementById('editItemQtyInput').value;
+            
+            if (!newName || newName.trim() === "") return alert("Name cannot be empty!");
+            const qtyParsed = parseInt(newQty);
+            if (isNaN(qtyParsed) || qtyParsed <= 0) return alert("Quantity must be greater than 0!");
+
+            await shoppingService.editItem(itemId, newName.trim(), qtyParsed);
+            
+            window.closeEditModal();
             await renderItems();
         };
 

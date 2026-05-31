@@ -1,5 +1,5 @@
 from sqlmodel import Session, select
-from app.shopping.models import ShoppingList, Item
+from app.shopping.models import ShoppingList, Item, ItemUpdate
 from typing import Optional
 from sqlalchemy.orm import joinedload  # noqa
 
@@ -73,18 +73,17 @@ def toggle_item_status(session: Session, item_id: int) -> Optional[Item]:
     return item
 
 
-def edit_item_name(session: Session, item_id: int, name: str) -> bool:
-    """Edits item name."""
-    item = session.get(Item, item_id)
-    if not item:
+def edit_item(session: Session, item_id: int, item_data: ItemUpdate) -> bool:
+    db_item = session.get(Item, item_id)
+    if not db_item:
         return False
 
-    item.name = name
-    item.is_done = 0  # noqa if name of the item is changed, assume that it should not be toggled
+    update_data = item_data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_item, key, value)
 
-    session.add(item)
+    session.add(db_item)
     session.commit()
-    session.refresh(item)
     return True
 
 

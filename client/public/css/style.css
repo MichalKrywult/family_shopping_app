@@ -120,6 +120,11 @@ input:focus,
     box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.15);
 }
 
+modal{
+    display: none;
+    flex-direction: column;
+}
+
 @media (max-width: 768px) {
     body {
         flex-direction: column;

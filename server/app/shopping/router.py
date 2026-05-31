@@ -35,15 +35,16 @@ def get_list(list_id: int, session: Session = Depends(get_session)):
 
 
 @router.put("/items/{item_id}")
-def edit_item_name(
+def edit_item(
     item_id: int, item_data: ItemUpdate, session: Session = Depends(get_session)
 ):
-    """Edits item name using JSON body."""
-    success = service.edit_item_name(session, item_id, item_data.name)
+    """Edits item name and/or quantity using JSON body."""
+    # Przekazujemy do serwisu cały obiekt item_data
+    success = service.edit_item(session, item_id, item_data)
 
     if not success:
         raise HTTPException(status_code=404, detail="Item not found")
-    return {"message": "Item name edited successfully"}
+    return {"message": "Item updated successfully"}
 
 
 @router.put("/items/{item_id}/done")
