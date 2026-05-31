@@ -1,4 +1,4 @@
-import { apiRequest } from '../core/api.js';
+import { apiRequest } from '../../core/api.js';
 
 export let currentListId = null;
 

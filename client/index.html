@@ -12,8 +12,8 @@
 <body>
 
     <div class="bottom-nav" id="bottomNav">
-        <button onclick="switchMobileView('sidebar')" id="navBtnSidebar" class="nav-item active">📋 Boards</button>
-        <button onclick="switchMobileView('main')" id="navBtnMain" class="nav-item">🛒 Active List</button>
+        <button id="navBtnSidebar" class="nav-item active">📋 Boards</button>
+        <button id="navBtnMain" class="nav-item">🛒 Active List</button>
     </div>
 
     <div class="sidebar">
@@ -22,7 +22,7 @@
         
         <div id="createListForm">
             <input type="text" id="listName" class="input-field mb-8" placeholder="New board name...">
-            <button onclick="handleCreateList()" class="w-100">+ Create List</button>
+            <button class="w-100">+ Create List</button>
         </div>
     </div>
 
@@ -43,7 +43,7 @@
                 <div class="add-item-row">
                     <input type="text" id="itemName" class="input-field flex-3" placeholder="Type...">
                     <input type="number" id="itemQty" class="input-field flex-1" value="1" min="1">
-                    <button onclick="handleAddItem()" class="flex-1">Add</button>
+                    <button class="flex-1">Add</button>
                 </div>
                 <div id="itemsContainer"></div>
             </div>
@@ -64,196 +64,13 @@
                 <input type="number" id="editItemQtyInput" class="input-field w-100" min="1">
             </div>
             <div class="modal-actions">
-                <button onclick="window.closeEditModal()" class="delete-btn cancel-btn">Cancel</button>
-                <button onclick="window.saveEditItem()">Save Changes</button>
+                <button class="delete-btn cancel-btn">Cancel</button>
+                <button>Save Changes</button>
             </div>
         </div>
     </div>
 
-    <script type="module">
-        import * as shoppingService from './src/shopping/shopping.js';
-
-        async function renderListsDashboard() {
-            const lists = await shoppingService.getAllLists();
-            const container = document.getElementById('listsDashboard');
-            container.innerHTML = '';
-
-            if (!lists || lists.length === 0) {
-                container.innerHTML = '<p class="text-muted font-italic font-sm">No boards found.</p>';
-                return;
-            }
-
-            lists.forEach(list => {
-                const button = document.createElement('button');
-                button.className = 'list-selector';
-                button.innerText = `📦 ${list.name}`;
-                button.onclick = () => window.handleSelectList(list.id, list.name);
-                container.appendChild(button);
-            });
-        }
-
-        async function renderItems() {
-            const listData = await shoppingService.loadListItems();
-            const container = document.getElementById('itemsContainer');
-            container.innerHTML = '';
-
-            if (!listData || !listData.items) return;
-                listData.items.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'item';
-                    const isChecked = item.is_done ? 'checked' : '';
-                    
-                    div.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 10px;">
-                        
-                        <div style="display: flex; align-items: center; gap: 12px; cursor: pointer; flex: 1; min-width: 0;" onclick="window.handleToggleItem(${item.id})">
-                            <input type="checkbox" ${isChecked} style="cursor: pointer; width: 18px; height: 18px; pointer-events: none; flex-shrink: 0;">
-                            <span class="${item.is_done ? 'done' : ''}" style="font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                ${item.name} <strong class="text-muted font-sm">x${item.quantity}</strong>
-                            </span>
-                        </div>
-                        
-                        <div style="display: flex; gap: 8px; flex-shrink: 0;">
-                            <button class="edit-btn" onclick="window.handleEditItem(event, ${item.id}, '${item.name}', ${item.quantity})">✏️</button>
-                            <button class="delete-btn" onclick="window.handleDeleteItem(null, ${item.id})">X</button>
-                        </div>
-
-                    </div>
-                    `;
-                    container.appendChild(div);
-                });
-        }
-
-        window.handleSelectList = async (listId, listName) => {
-            shoppingService.setCurrentListId(listId);
-            document.getElementById('blankState').style.display = 'none';
-            document.getElementById('currentListName').innerText = listName;
-            document.getElementById('currentListCard').style.display = 'block';
-            
-            const deleteBtn = document.getElementById('deleteListBtn');
-            deleteBtn.onclick = async () => {
-                if (!confirm(`Are you sure you want to delete board "${listName}"?`)) return;
-                await shoppingService.deleteList(listId);
-                
-                document.getElementById('currentListCard').style.display = 'none';
-                document.getElementById('blankState').style.display = 'block';
-                shoppingService.setCurrentListId(null);
-                await renderListsDashboard();
-                
-                if (window.innerWidth <= 768) {
-                    window.switchMobileView('sidebar');
-                }
-            };
-
-            await renderItems();
-
-            if (window.innerWidth <= 768) {
-                window.switchMobileView('main');
-            }
-        };
-
-        window.handleCreateList = async () => {
-            const name = document.getElementById('listName').value;
-            if (!name) return alert('Enter a board name!');
-            
-            const list = await shoppingService.createNewList(name);
-            document.getElementById('listName').value = '';
-            
-            await renderListsDashboard();
-            await window.handleSelectList(list.id, list.name);
-        };
-
-        window.handleAddItem = async () => {
-            const name = document.getElementById('itemName').value;
-            const qty = document.getElementById('itemQty').value;
-            if (!name) return alert('Enter a product name!');
-
-            await shoppingService.addItemToCurrentList(name, parseInt(qty));
-            document.getElementById('itemName').value = '';
-            document.getElementById('itemQty').value = '1';
-            await renderItems();
-        };
-
-        window.handleToggleItem = async (itemId) => {
-            await shoppingService.toggleItemDone(itemId);
-            await renderItems();
-        };
-
-        window.handleEditItem = (event, itemId, currentName, currentQty) => {
-            if (event) event.stopPropagation(); 
-            
-            document.getElementById('editItemId').value = itemId;
-            document.getElementById('editItemNameInput').value = currentName;
-            document.getElementById('editItemQtyInput').value = currentQty;
-            
-            document.getElementById('editModal').style.display = 'flex';
-        };
-
-        window.closeEditModal = () => {
-            document.getElementById('editModal').style.display = 'none';
-        };
-
-
-        window.saveEditItem = async () => {
-            const itemId = document.getElementById('editItemId').value;
-            const newName = document.getElementById('editItemNameInput').value;
-            const newQty = document.getElementById('editItemQtyInput').value;
-            
-            if (!newName || newName.trim() === "") return alert("Name cannot be empty!");
-            const qtyParsed = parseInt(newQty);
-            if (isNaN(qtyParsed) || qtyParsed <= 0) return alert("Quantity must be greater than 0!");
-
-            await shoppingService.editItem(itemId, newName.trim(), qtyParsed);
-            
-            window.closeEditModal();
-            await renderItems();
-        };
-
-        window.handleDeleteItem = async (event, itemId) => {
-            if (event) event.stopPropagation()
-            
-            if (!confirm('Delete this item?')) return;
-            await shoppingService.deleteItem(itemId);
-            await renderItems();
-        };
-
-        window.switchMobileView = (view) => {
-            const sidebar = document.querySelector('.sidebar');
-            const mainContent = document.querySelector('.main-content');
-            const btnSidebar = document.getElementById('navBtnSidebar');
-            const btnMain = document.getElementById('navBtnMain');
-
-            if (view === 'sidebar') {
-                sidebar.classList.add('active-mobile');
-                mainContent.classList.remove('active-mobile');
-                btnSidebar.classList.add('active');
-                btnMain.classList.remove('active');
-            } else {
-                sidebar.classList.remove('active-mobile');
-                mainContent.classList.add('active-mobile');
-                btnSidebar.classList.remove('active');
-                btnMain.classList.add('active');
-            }
-        };
-
-        async function init() {
-            await renderListsDashboard();
-            if (window.innerWidth <= 768) {
-                window.switchMobileView('sidebar');
-            }
-        }
-
-        init();
-    </script>
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('public/sw.js')
-                    .then(reg => console.log('PWA Service Worker registered!'))
-                    .catch(err => console.error('PWA Error:', err));
-            });
-        }
-    </script>
+    <script type="module" src="./src/app.js"></script>
+    <script src="./src/pwa-register.js"></script>
 </body>
 </html>
