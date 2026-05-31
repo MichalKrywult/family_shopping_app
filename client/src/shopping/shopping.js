@@ -11,7 +11,7 @@ export async function getAllLists() {
 }
 
 export async function createNewList(name) {
-    const data = await apiRequest(`/shopping/?name=${encodeURIComponent(name)}`, 'POST');
+    const data = await apiRequest('/shopping/', 'POST', { name: name });
     currentListId = data.id;
     return data;
 }
@@ -23,7 +23,10 @@ export async function loadListItems() {
 
 export async function addItemToCurrentList(name, quantity) {
     if (!currentListId) return;
-    return await apiRequest(`/shopping/${currentListId}/items?name=${encodeURIComponent(name)}&quantity=${quantity}`, 'POST');
+    return await apiRequest(`/shopping/${currentListId}/items`, 'POST', { 
+        name: name, 
+        quantity: quantity 
+    });
 }
 
 export async function toggleItemDone(itemId) {
@@ -35,7 +38,7 @@ export async function deleteItem(itemId) {
 }
 
 export async function editItemName(itemId, name) {
-    return await apiRequest(`/shopping/items/${itemId}?name=${encodeURIComponent(name)}`,"PUT");
+    return await apiRequest(`/shopping/items/${itemId}`, "PUT", { name: name });
 }
 
 export async function deleteList(listId) {

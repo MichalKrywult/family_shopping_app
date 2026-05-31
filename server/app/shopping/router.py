@@ -2,24 +2,25 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 from app.core.database import get_session
 from . import service
+from app.shopping.models import ItemUpdate, ShoppingListCreate, ItemCreate
 
 router = APIRouter(prefix="/shopping", tags=["Shopping Lists"])
 
 
 @router.post("/", status_code=201)
-def create_new_list(name: str, session: Session = Depends(get_session)):
-    """Creates a new shopping list."""
-    return service.create_list(session, name)
+def create_new_list(
+    list_data: ShoppingListCreate, session: Session = Depends(get_session)
+):
+    """Creates a new shopping list using JSON body."""
+    return service.create_list(session, list_data.name)
 
 
 @router.post("/{list_id}/items", status_code=201)
 def add_item_to_list(
-    list_id: int, name: str, quantity: int = 1, session: Session = Depends(get_session)
+    list_id: int, item_data: ItemCreate, session: Session = Depends(get_session)
 ):
-    """Adds an item to a specific shopping list."""
-
-    service.add_item_to_list(session, list_id, name, quantity)
-
+    """Adds an item to a shopping list using JSON body."""
+    service.add_item_to_list(session, list_id, item_data.name, item_data.quantity)
     return {"message": "Item added successfully"}
 
 
@@ -34,12 +35,15 @@ def get_list(list_id: int, session: Session = Depends(get_session)):
 
 
 @router.put("/items/{item_id}")
-def edit_item_name(item_id: int, name: str, session: Session = Depends(get_session)):
-    """Edits item name."""
-    success = service.edit_item_name(session, item_id, name)
+def edit_item_name(
+    item_id: int, item_data: ItemUpdate, session: Session = Depends(get_session)
+):
+    """Edits item name using JSON body."""
+    success = service.edit_item_name(session, item_id, item_data.name)
+
     if not success:
         raise HTTPException(status_code=404, detail="Item not found")
-    return {"message": "Item name edited successfully"} 
+    return {"message": "Item name edited successfully"}
 
 
 @router.put("/items/{item_id}/done")

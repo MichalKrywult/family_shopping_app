@@ -25,3 +25,16 @@ class Item(SQLModel, table=True):
 
     list_id: int = Field(foreign_key="shopping_lists.id")
     shopping_list: Optional[ShoppingList] = Relationship(back_populates="items")
+
+
+class ShoppingListCreate(SQLModel):
+    name: str
+
+
+class ItemUpdate(SQLModel):
+    name: str
+
+
+class ItemCreate(SQLModel):
+    name: str
+    quantity: int = 1
