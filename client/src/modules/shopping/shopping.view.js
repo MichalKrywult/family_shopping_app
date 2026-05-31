@@ -1,5 +1,6 @@
 import * as shoppingService from './shopping.service.js';
 import { switchMobileView } from '../../shared/responsive.js';
+import { showToast } from '../../shared/toast.js';
 
 const DOM = {
     listsDashboard: document.getElementById('listsDashboard'),
@@ -80,6 +81,8 @@ async function handleSelectList(listId, listName) {
         DOM.blankState.style.display = 'block';
         shoppingService.setCurrentListId(null);
         await renderListsDashboard();
+        
+        showToast(`Board "${listName}" deleted`, 'info');
         if (window.innerWidth <= 768) switchMobileView('sidebar');
     };
 
@@ -89,21 +92,27 @@ async function handleSelectList(listId, listName) {
 
 async function handleCreateList() {
     const name = DOM.listNameInput.value.trim();
-    if (!name) return alert('Enter a board name!');
+    if (!name) return showToast('Enter a board name!', 'error'); 
+    
     await shoppingService.createNewList(name);
     DOM.listNameInput.value = '';
     await renderListsDashboard();
     await handleSelectList(shoppingService.currentListId, name);
+    
+    showToast(`Board "${name}" created successfully!`, 'success');
 }
 
 async function handleAddItem() {
     const name = DOM.itemNameInput.value.trim();
     const qty = DOM.itemQtyInput.value;
-    if (!name) return alert('Enter a product name!');
+    if (!name) return showToast('Enter a product name!', 'error');
+    
     await shoppingService.addItemToCurrentList(name, parseInt(qty));
     DOM.itemNameInput.value = '';
     DOM.itemQtyInput.value = '1';
     await renderItems();
+    
+    showToast(`Added ${name} (x${qty})`, 'success');
 }
 
 async function handleToggleItem(itemId) {
@@ -123,10 +132,13 @@ async function saveEditItem() {
     const itemId = DOM.editItemId.value;
     const newName = DOM.editItemNameInput.value.trim();
     const newQty = DOM.editItemQtyInput.value;
-    if (!newName) return alert("Name cannot be empty!");
+    if (!newName) return showToast("Name cannot be empty!", 'error');
+    
     await shoppingService.editItem(itemId, newName, parseInt(newQty));
     DOM.editModal.style.display = 'none';
     await renderItems();
+    
+    showToast('Item updated successfully', 'success');
 }
 
 async function handleDeleteItem(event, itemId) {
