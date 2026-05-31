@@ -1,27 +1,35 @@
-const btnSidebar = document.getElementById('navBtnSidebar');
-const btnMain = document.getElementById('navBtnMain');
-const sidebar = document.querySelector('.sidebar');
-const mainContent = document.querySelector('.main-content');
+import { DOM } from './dom.js';
 
 export function switchMobileView(view) {
+    if (!DOM.sidebar || !DOM.mainContent) return;
+
     if (view === 'sidebar') {
-        sidebar.classList.add('active-mobile');
-        mainContent.classList.remove('active-mobile');
-        btnSidebar.classList.add('active');
-        btnMain.classList.remove('active');
+        DOM.sidebar.classList.add('active-mobile');
+        DOM.mainContent.classList.remove('active-mobile');
+        if (DOM.btnSidebar && DOM.btnMain) {
+            DOM.btnSidebar.classList.add('active');
+            DOM.btnMain.classList.remove('active');
+        }
     } else {
-        sidebar.classList.remove('active-mobile');
-        mainContent.classList.add('active-mobile');
-        btnSidebar.classList.remove('active');
-        btnMain.classList.add('active');
+        DOM.sidebar.classList.remove('active-mobile');
+        DOM.mainContent.classList.add('active-mobile');
+        if (DOM.btnSidebar && DOM.btnMain) {
+            DOM.btnSidebar.classList.remove('active');
+            DOM.btnMain.classList.add('active');
+        }
     }
+
+    localStorage.setItem('mobile_view', view);
 }
 
 export function initResponsive() {
-    btnSidebar.addEventListener('click', () => switchMobileView('sidebar'));
-    btnMain.addEventListener('click', () => switchMobileView('main'));
+    if (DOM.btnSidebar && DOM.btnMain) {
+        DOM.btnSidebar.addEventListener('click', () => switchMobileView('sidebar'));
+        DOM.btnMain.addEventListener('click', () => switchMobileView('main'));
+    }
 
     if (window.innerWidth <= 768) {
-        switchMobileView('sidebar');
+        const savedView = localStorage.getItem('mobile_view') || 'sidebar';
+        switchMobileView(savedView);
     }
 }

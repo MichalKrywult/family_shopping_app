@@ -1,9 +1,16 @@
 import { apiRequest } from '../../core/api.js';
 
-export let currentListId = null;
+export let currentListId = localStorage.getItem('active_board_id') 
+    ? parseInt(localStorage.getItem('active_board_id')) 
+    : null;
 
 export function setCurrentListId(id) {
     currentListId = id;
+    if (id) {
+        localStorage.setItem('active_board_id', id);
+    } else {
+        localStorage.removeItem('active_board_id');
+    }
 }
 
 export async function getAllLists() {
@@ -47,3 +54,4 @@ export async function editItem(itemId, name, quantity) {
 export async function deleteList(listId) {
     return await apiRequest(`/shopping/${listId}`, 'DELETE');
 }
+

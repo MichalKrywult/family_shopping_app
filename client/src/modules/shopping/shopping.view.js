@@ -148,11 +148,21 @@ async function handleDeleteItem(event, itemId) {
     await renderItems();
 }
 
-export function initShoppingModule() {
+export async function initShoppingModule() {
     DOM.createListBtn.addEventListener('click', handleCreateList);
     DOM.addItemBtn.addEventListener('click', handleAddItem);
     DOM.cancelEditBtn.addEventListener('click', () => DOM.editModal.style.display = 'none');
     DOM.saveEditBtn.addEventListener('click', saveEditItem);
 
-    renderListsDashboard();
+    await renderListsDashboard();
+
+    if (shoppingService.currentListId) {
+        const currentList = await shoppingService.loadListItems();
+        if (currentList) {
+            await handleSelectList(currentList.id, currentList.name);
+        } else {
+            shoppingService.setCurrentListId(null);
+        }
+    }
+
 }
