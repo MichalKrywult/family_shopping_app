@@ -25,33 +25,43 @@ const DOM = {
 async function renderListsDashboard() {
     const lists = await shoppingService.getAllLists();
     DOM.listsDashboard.innerHTML = '';
+    
     if (!lists || lists.length === 0) {
         DOM.listsDashboard.innerHTML = '<p class="text-muted font-italic font-sm">No boards found.</p>';
         return;
     }
+    
     lists.forEach(list => {
         const button = document.createElement('button');
         button.className = 'list-selector';
-        button.innerText = `📦 ${list.name}`;
+        button.id = `list-btn-${list.id}`;
+        
+        const count = list.items_count !== undefined ? list.items_count : 0;
+        button.innerHTML = `📦 ${list.name} <strong class="text-muted font-sm">x${count}</strong>`;
+        
         button.addEventListener('click', () => handleSelectList(list.id, list.name));
         DOM.listsDashboard.appendChild(button);
     });
 }
 
-async function renderItems() {
-    const listData = await shoppingService.loadListItems();
+async function renderItems(listData) {
+    if (!listData) listData = await shoppingService.loadListItems();
+    
     DOM.itemsContainer.innerHTML = '';
-    if (!listData || !listData.items) return;
+    if (!listData || !listData.items) return 0;
 
     listData.items.forEach(item => {
         const div = document.createElement('div');
         div.className = 'item';
-        const isChecked = item.is_done ? 'checked' : '';
+        
+        const isDone = Number(item.is_done) === 1;
+        const isChecked = isDone ? 'checked' : '';
+        
         div.innerHTML = `
             <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 10px;">
                 <div class="item-checkbox-wrapper" style="display: flex; align-items: center; gap: 12px; cursor: pointer; flex: 1; min-width: 0;">
                     <input type="checkbox" ${isChecked} style="cursor: pointer; width: 18px; height: 18px; pointer-events: none; flex-shrink: 0;">
-                    <span class="${item.is_done ? 'done' : ''}" style="font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    <span class="${isDone ? 'done' : ''}" style="font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                         ${item.name} <strong class="text-muted font-sm">x${item.quantity}</strong>
                     </span>
                 </div>
@@ -66,27 +76,43 @@ async function renderItems() {
         div.querySelector('.action-delete-btn').addEventListener('click', (e) => handleDeleteItem(e, item.id));
         DOM.itemsContainer.appendChild(div);
     });
+
+    const activeItems = listData.items.filter(item => Number(item.is_done) === 0);
+    return activeItems.length;
+}
+
+async function updateUI() {
+    const listData = await shoppingService.loadListItems();
+    if (!listData) return;
+
+    const activeCount = await renderItems(listData);
+    await renderListsDashboard();
+
+    DOM.currentListName.innerHTML =
+        `${listData.name} <strong class="text-muted font-sm">Items left: ${activeCount}</strong>`;
 }
 
 async function handleSelectList(listId, listName) {
     shoppingService.setCurrentListId(listId);
     DOM.blankState.style.display = 'none';
-    DOM.currentListName.innerText = listName;
     DOM.currentListCard.style.display = 'block';
-    
+
     DOM.deleteListBtn.onclick = async () => {
         if (!confirm(`Are you sure you want to delete board "${listName}"?`)) return;
         await shoppingService.deleteList(listId);
+
         DOM.currentListCard.style.display = 'none';
         DOM.blankState.style.display = 'block';
         shoppingService.setCurrentListId(null);
+
         await renderListsDashboard();
-        
         showToast(`Board "${listName}" deleted`, 'info');
+
         if (window.innerWidth <= 768) switchMobileView('sidebar');
     };
 
-    await renderItems();
+    await updateUI();
+
     if (window.innerWidth <= 768) switchMobileView('main');
 }
 
@@ -96,6 +122,7 @@ async function handleCreateList() {
     
     await shoppingService.createNewList(name);
     DOM.listNameInput.value = '';
+
     await renderListsDashboard();
     await handleSelectList(shoppingService.currentListId, name);
     
@@ -110,14 +137,14 @@ async function handleAddItem() {
     await shoppingService.addItemToCurrentList(name, parseInt(qty));
     DOM.itemNameInput.value = '';
     DOM.itemQtyInput.value = '1';
-    await renderItems();
-    
+
+    await updateUI();
     showToast(`Added ${name} (x${qty})`, 'success');
 }
 
 async function handleToggleItem(itemId) {
     await shoppingService.toggleItemDone(itemId);
-    await renderItems();
+    await updateUI();
 }
 
 function handleEditItem(event, itemId, currentName, currentQty) {
@@ -132,20 +159,22 @@ async function saveEditItem() {
     const itemId = DOM.editItemId.value;
     const newName = DOM.editItemNameInput.value.trim();
     const newQty = DOM.editItemQtyInput.value;
+
     if (!newName) return showToast("Name cannot be empty!", 'error');
     
     await shoppingService.editItem(itemId, newName, parseInt(newQty));
     DOM.editModal.style.display = 'none';
-    await renderItems();
-    
+
+    await updateUI();
     showToast('Item updated successfully', 'success');
 }
 
 async function handleDeleteItem(event, itemId) {
     if (event) event.stopPropagation();
     if (!confirm('Delete this item?')) return;
+
     await shoppingService.deleteItem(itemId);
-    await renderItems();
+    await updateUI();
 }
 
 export async function initShoppingModule() {

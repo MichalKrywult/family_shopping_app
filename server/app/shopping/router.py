@@ -2,7 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 from app.core.database import get_session
 from . import service
-from app.shopping.models import ItemUpdate, ShoppingListCreate, ItemCreate
+from app.shopping.models import (
+    ItemUpdate,
+    ShoppingListCreate,
+    ItemCreate,
+)
+
 
 router = APIRouter(prefix="/shopping", tags=["Shopping Lists"])
 

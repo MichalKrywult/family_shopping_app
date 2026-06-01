@@ -1,5 +1,5 @@
 from sqlmodel import Session, select
-from app.shopping.models import ShoppingList, Item, ItemUpdate
+from app.shopping.models import ShoppingList, Item, ItemUpdate, ShoppingListMinimal
 from typing import Optional
 from sqlalchemy.orm import joinedload  # noqa
 
@@ -98,7 +98,24 @@ def delete_item(session: Session, item_id: int) -> bool:
     return True
 
 
-def get_all_lists(session: Session) -> list[ShoppingList]:
-    """Returns all lists."""
+def get_all_lists(session: Session) -> list[ShoppingListMinimal]:
+    """Returns all lists with items count."""
     statement = select(ShoppingList).where(ShoppingList.is_deleted == 0)
-    return list(session.exec(statement).all())
+    db_lists = session.exec(statement).all()
+
+    result = []
+    if db_lists != []:
+        for shopping_list in db_lists:
+            if shopping_list.id is not None:
+                list_data = ShoppingListMinimal(
+                    id=shopping_list.id,
+                    name=shopping_list.name,
+                    is_deleted=shopping_list.is_deleted,
+                    created_at=shopping_list.created_at,
+                    items_count=sum(
+                        1 for item in shopping_list.items if item.is_done == 0
+                    ),
+                )
+                result.append(list_data)
+
+    return result

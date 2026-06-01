@@ -31,6 +31,22 @@ class ShoppingListCreate(SQLModel):
     name: str
 
 
+class ShoppingListMinimal(SQLModel):
+    id: int
+    name: str
+    is_deleted: int
+    created_at: datetime
+    items_count: int
+
+
+class ShoppingListDetail(SQLModel):
+    id: int
+    name: str
+    is_deleted: int
+    created_at: datetime
+    items: List["Item"]
+
+
 class ItemUpdate(SQLModel):
     name: Optional[str] = None
     quantity: Optional[int] = None
