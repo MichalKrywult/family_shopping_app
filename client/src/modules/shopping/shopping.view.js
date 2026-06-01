@@ -85,7 +85,6 @@ async function updateUI() {
         activeListButton.innerHTML = `📦 ${listData.name} <strong class="text-muted font-sm">x${activeCount}</strong>`;
     }
 
-    
 }
 
 async function handleSelectList(listId, listName) {
@@ -117,12 +116,10 @@ function animateListReorder(oldPositions) {
 
     items.forEach(item => {
         const oldPos = oldPositions.get(item.dataset.itemId);
-
         if (!oldPos) return;
 
         const newPos = item.getBoundingClientRect();
         const deltaY = oldPos.top - newPos.top;
-
         if (deltaY === 0) return;
 
         item.style.transition = 'none';
@@ -130,24 +127,18 @@ function animateListReorder(oldPositions) {
 
         requestAnimationFrame(() => {
             const duration = Math.min(
-                Math.max(Math.sqrt(Math.abs(deltaY)) * 25, 180),
-                650
+                Math.max(Math.sqrt(Math.abs(deltaY)) * 35, 999),
+                1300
             );
-            item.style.transition = `transform ${duration}ms ease`;
+            
+            item.style.transition = `transform ${duration}ms cubic-bezier(0.2, 0.8, 0.2, 1)`;
             item.style.transform = '';
-        });
 
-        item.addEventListener(
-            'transitionend',
-            () => {
+            setTimeout(() => {
                 item.style.transition = '';
-            },
-            { once: true }
-        );
-        setTimeout(() => {
-            item.style.transition = '';
-            item.style.transform = '';
-        }, 500);
+                item.style.transform = '';
+            }, duration);
+        });
     });
 }
 
@@ -193,8 +184,11 @@ async function handleToggleItem(itemId) {
 
     await updateUI();
     requestAnimationFrame(() => {
-        animateListReorder(oldPositions);
+        requestAnimationFrame(() => {
+            animateListReorder(oldPositions);
+        });
     });
+    
 }
 
 function handleEditItem(event, itemId, currentName, currentQty) {
