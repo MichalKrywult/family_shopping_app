@@ -1,11 +1,22 @@
-from typing import List, Optional, ClassVar
-from sqlmodel import Field, Relationship, SQLModel
 from datetime import datetime
+from typing import ClassVar, List, Optional
+from sqlmodel import Field, Relationship, SQLModel
+
+
+class User(SQLModel, table=True):
+    __tablename__: ClassVar[str] = "users"
+    id: Optional[int] = Field(default=None, primary_key=True, index=True)
+    username: str = Field(unique=True, index=True, nullable=False)
+    hashed_password: str = Field(nullable=False)
+    is_active: bool = Field(default=True)
+    shopping_items: List["Item"] = Relationship(
+        back_populates="owner",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
 
 
 class ShoppingList(SQLModel, table=True):
     __tablename__: ClassVar[str] = "shopping_lists"
-
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(nullable=False)
     is_deleted: int = Field(default=0)
@@ -25,6 +36,18 @@ class Item(SQLModel, table=True):
 
     list_id: int = Field(foreign_key="shopping_lists.id")
     shopping_list: Optional[ShoppingList] = Relationship(back_populates="items")
+    owner_id: Optional[int] = Field(default=None, foreign_key="users.id")
+    owner: Optional[User] = Relationship(back_populates="shopping_items")
+
+
+class ItemRead(SQLModel):
+    id: int
+    name: str
+    quantity: int
+    is_done: int
+    created_at: datetime
+    list_id: int
+    owner_id: Optional[int]
 
 
 class ShoppingListCreate(SQLModel):
@@ -44,7 +67,7 @@ class ShoppingListDetail(SQLModel):
     name: str
     is_deleted: int
     created_at: datetime
-    items: List["Item"]
+    items: List[ItemRead]
 
 
 class ItemUpdate(SQLModel):
