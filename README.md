@@ -1,85 +1,75 @@
 # Modular Shopping List API
 
-A modern, production-ready backend for a shopping list application. The project is designed using a **Vertical Feature Architecture**, enabling easy scalability and seamless addition of new modules (e.g., user authentication, notifications).
+A modern, production-ready backend for a shopping list application. The project is built using a **Vertical Feature Architecture**, making it easy to scale and extend with additional modules such as authentication, notifications, or user management.
 
 ## 🚀 Technologies
 
 * **Python**
-* **FastAPI** – asynchronous web framework  
-* **SQLModel** – modern ORM combining the capabilities of SQLAlchemy and Pydantic  
-* **SQLite** – relational database  
-* **Git** – version control  
+* **FastAPI** — asynchronous web framework
+* **SQLModel** — modern ORM combining the power of SQLAlchemy and Pydantic
+* **SQLite** — lightweight relational database
+* **Docker & Docker Compose** — containerized deployment
+* **Git** — version control
 
-## 🏗️ Project Architecture
+---
 
-The project follows a **Vertical Feature Architecture** approach. Each business module (e.g., `shopping`) contains its own database models, business logic (service), and API endpoints (router), minimizing dependencies between system components.
+## 🏗️ Architecture
 
-### Server-side project structure with a single feature slice (`shopping`)
+The application follows a **Vertical Feature Architecture** approach. Each feature contains its own models, business logic, and API endpoints, minimizing coupling between modules and improving maintainability.
+
+### Project Structure
 
 ```text
 server/
 ├── data/                  # Local database (ignored by Git)
 └── app/
     ├── main.py            # Application entry point
-    ├── core/              # Global configuration (database setup)
-    └── shopping/          # Shopping lists and items management module
-        ├── models.py      # Database table definitions using SQLModel
-        ├── service.py     # Business logic and database operations
-        └── router.py      # FastAPI API endpoints
+    ├── core/              # Global configuration (database, environment variables)
+    ├── auth/              # Authentication module (JWT, registration, login)
+    │   ├── models.py
+    │   ├── service.py
+    │   └── router.py
+    └── shopping/          # Shopping lists and items management
+        ├── models.py
+        ├── service.py
+        └── router.py
 ```
-
-## 🛠️ Features
-
-* Create multiple independent shopping lists  
-* Add items to specific shopping lists with a defined quantity  
-* Mark items as purchased (`is_done`)  
-* Soft Delete mechanism for shopping lists – lists are not permanently removed from the database, preserving historical data consistency  
-* Data security through Pydantic validation and parameterized SQL queries (protection against SQL Injection)  
-
-## 💻 Running the Project Locally
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/MichalKrywult/family_shopping_app
-cd list-zakupowa-backend
-```
-
-### 2. Create and activate a virtual environment
-
-```bash
-python -m venv .venv
-
-# Windows
-.venv\Scripts\activate
-
-# macOS/Linux
-source .venv/bin/activate
-```
- 
-### 3. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Start the development server
-
-```bash
-uvicorn app.main:app --reload
-```
-
-### 5. Open the interactive API documentation
-
-[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 ---
 
-# 🐳 Running the Project with Docker (Recommended)
+## ✨ Features
 
-The backend is fully containerized using **Docker** and **docker-compose**, allowing you to run the entire server with a single command.
+* User registration and authentication using OAuth2 and JWT tokens
+* Secure password hashing with bcrypt
+* Multiple shopping lists assigned to individual users
+* Adding items with custom quantities
+* Marking items as purchased (`is_done`)
+* Soft Delete mechanism for shopping lists
+* Input validation using Pydantic
+* Protection against common security threats such as SQL Injection
+* Modular architecture designed for future expansion
 
-## 1. Build and start the server
+---
+
+## ⚙️ Environment Variables
+
+Before starting the application, create a `.env` file inside the `server/` directory based on `.env.example`.
+
+```env
+SECRET_KEY="your-super-secret-key-for-jwt"
+ALGORITHM="HS256"
+ACCESS_TOKEN_EXPIRE_DAYS=30
+```
+
+---
+
+# 🐳 Running with Docker (Recommended)
+
+## 1. Configure Environment Variables
+
+Create the required `.env` file inside the `server/` directory.
+
+## 2. Build and Start the Application
 
 ```bash
 docker compose up -d --build
@@ -87,61 +77,81 @@ docker compose up -d --build
 
 This command will:
 
-- build the Docker image from `./server/Dockerfile`
-- start the `shopping-app` service in the background
-- expose the API on port **8000**
-- mount local volumes (database and client directory)
-- automatically restart the service if it stops (`restart: unless-stopped`)
+* Build the Docker image from `server/Dockerfile`
+* Start the `shopping-app` service in the background
+* Expose the API on port **8000**
+* Mount local volumes for persistent data storage
+* Load environment variables from the `.env` file
+* Automatically restart the container if it stops
 
-## 2. Verify that the container is running
+## 3. Verify the Container Status
 
 ```bash
 docker ps --filter "name=shopping_list_container"
 ```
 
-## 3. Access the API documentation
+## 4. Open API Documentation
 
-[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+```text
+http://127.0.0.1:8000/docs
+```
 
 ---
 
-# 💻 Running the Project Without Docker (Development Mode)
+# 💻 Running Locally (Development Mode)
 
-If you prefer to run the backend directly on your machine:
+## 1. Clone the Repository
 
-### 1. Create and activate a virtual environment
+```bash
+git clone https://github.com/MichalKrywult/family_shopping_app.git
+cd family_shopping_app
+```
+
+## 2. Create and Activate a Virtual Environment
 
 ```bash
 python -m venv .venv
+```
 
-# Windows
+### Windows
+
+```bash
 .venv\Scripts\activate
+```
 
-# macOS/Linux
+### macOS / Linux
+
+```bash
 source .venv/bin/activate
 ```
 
-### 2. Install dependencies
+## 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Start the development server
+## 4. Configure Environment Variables
+
+Create the `.env` file inside the `server/` directory.
+
+## 5. Run the Development Server
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-### 4. Open the API documentation
+## 6. Open API Documentation
 
-[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+```text
+http://127.0.0.1:8000/docs
+```
 
 ---
 
 # 🚀 Deployment
 
-To redeploy the application after making changes:
+To deploy a new version after making changes:
 
 ```bash
 docker compose up -d --build
@@ -149,7 +159,42 @@ docker compose up -d --build
 
 Docker Compose will automatically:
 
-- stop the old container  
-- rebuild the image  
-- start the updated version  
-- preserve your database stored in `./server/data`
+* Stop the old container
+* Rebuild the image
+* Start the updated version
+* Preserve the database stored in `./server/data`
+
+---
+
+## 📖 API Documentation
+
+Once the application is running, interactive API documentation is available at:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Additional OpenAPI schema:
+
+```text
+http://127.0.0.1:8000/openapi.json
+```
+
+---
+
+## 🔒 Security
+
+The application includes several security mechanisms:
+
+* JWT-based authentication
+* Password hashing using bcrypt
+* Request validation via Pydantic
+* Environment-based secret management
+* Soft Delete strategy for preserving data integrity
+* SQLModel/SQLAlchemy ORM protection against SQL Injection
+
+---
+
+## 📄 License
+
+This project is available under the MIT License.
