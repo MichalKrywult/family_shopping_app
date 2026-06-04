@@ -4,27 +4,43 @@ from typing import Optional
 from sqlalchemy.orm import joinedload  # noqa
 
 
-def create_list(session: Session, name: str) -> ShoppingList:
-    """Creates a new shopping list using the ORM."""
-    db_list = ShoppingList(name=name)
+def create_list(session: Session, name: str, user_id: int) -> ShoppingList:
+    """Creates a new shopping list assigning the owner_id."""
+    db_list = ShoppingList(name=name, owner_id=user_id)
     session.add(db_list)
     session.commit()
     session.refresh(db_list)
     return db_list
 
 
-def add_item_to_list(session: Session, list_id: int, name: str, quantity: int) -> Item:
-    """Adds an item to the list using the ORM."""
-    db_item = Item(list_id=list_id, name=name, quantity=quantity)
+def add_item_to_list(
+    session: Session, list_id: int, name: str, quantity: int, user_id: int
+) -> Optional[Item]:
+    """Adds an item to the list, verifying that the user owns the list."""
+    # Security: ensure the target list belongs to the authenticated user.
+    statement = select(ShoppingList).where(
+        ShoppingList.id == list_id,
+        ShoppingList.owner_id == user_id,
+        ShoppingList.is_deleted == 0,
+    )
+    shopping_list = session.exec(statement).first()
+    if not shopping_list:
+        return None
+
+    db_item = Item(list_id=list_id, name=name, quantity=quantity, owner_id=user_id)
     session.add(db_item)
     session.commit()
     session.refresh(db_item)
     return db_item
 
 
-def delete_list(session: Session, list_id: int) -> bool:
-    """Soft Delete dla listy zakupów."""
-    shopping_list = session.get(ShoppingList, list_id)
+def delete_list(session: Session, list_id: int, user_id: int) -> bool:
+    """Soft Delete dla listy zakupów należącej do użytkownika."""
+    statement = select(ShoppingList).where(
+        ShoppingList.id == list_id, ShoppingList.owner_id == user_id
+    )
+    shopping_list = session.exec(statement).first()
+
     if not shopping_list or shopping_list.is_deleted == 1:
         return False
 
@@ -34,10 +50,12 @@ def delete_list(session: Session, list_id: int) -> bool:
     return True
 
 
-def get_list_with_items(session: Session, list_id: int) -> Optional[dict]:
-    """Returns items of list, in hash map."""
+def get_list_with_items(session: Session, list_id: int, user_id: int) -> Optional[dict]:
+    """Returns items of a list, verified by list ownership."""
     statement_list = select(ShoppingList).where(
-        ShoppingList.id == list_id, ShoppingList.is_deleted == 0
+        ShoppingList.id == list_id,
+        ShoppingList.owner_id == user_id,
+        ShoppingList.is_deleted == 0,
     )
     shopping_list = session.exec(statement_list).first()
 
@@ -56,9 +74,15 @@ def get_list_with_items(session: Session, list_id: int) -> Optional[dict]:
     }
 
 
-def toggle_item_status(session: Session, item_id: int) -> Optional[Item]:
-    """Toggles item state (0 -> 1, 1 -> 0)."""
-    item = session.get(Item, item_id)
+def toggle_item_status(session: Session, item_id: int, user_id: int) -> Optional[Item]:
+    """Toggles item state if the item belongs to a list owned by the user."""
+    # Join with ShoppingList to enforce ownership validation.
+    statement = (
+        select(Item)
+        .join(ShoppingList)
+        .where(Item.id == item_id, ShoppingList.owner_id == user_id)
+    )
+    item = session.exec(statement).first()
     if not item:
         return None
 
@@ -73,8 +97,16 @@ def toggle_item_status(session: Session, item_id: int) -> Optional[Item]:
     return item
 
 
-def edit_item(session: Session, item_id: int, item_data: ItemUpdate) -> bool:
-    db_item = session.get(Item, item_id)
+def edit_item(
+    session: Session, item_id: int, item_data: ItemUpdate, user_id: int
+) -> bool:
+    """Edits an item if it belongs to a list owned by the user."""
+    statement = (
+        select(Item)
+        .join(ShoppingList)
+        .where(Item.id == item_id, ShoppingList.owner_id == user_id)
+    )
+    db_item = session.exec(statement).first()
     if not db_item:
         return False
 
@@ -87,9 +119,14 @@ def edit_item(session: Session, item_id: int, item_data: ItemUpdate) -> bool:
     return True
 
 
-def delete_item(session: Session, item_id: int) -> bool:
-    """Deletes an item from list. Returns True if success, False if not found."""
-    item = session.get(Item, item_id)
+def delete_item(session: Session, item_id: int, user_id: int) -> bool:
+    """Deletes an item from list if it belongs to a list owned by the user."""
+    statement = (
+        select(Item)
+        .join(ShoppingList)
+        .where(Item.id == item_id, ShoppingList.owner_id == user_id)
+    )
+    item = session.exec(statement).first()
     if not item:
         return False
 
@@ -98,9 +135,11 @@ def delete_item(session: Session, item_id: int) -> bool:
     return True
 
 
-def get_all_lists(session: Session) -> list[ShoppingListMinimal]:
-    """Returns all lists with items count."""
-    statement = select(ShoppingList).where(ShoppingList.is_deleted == 0)
+def get_all_lists(session: Session, user_id: int) -> list[ShoppingListMinimal]:
+    """Returns all lists owned by the user, with items count."""
+    statement = select(ShoppingList).where(
+        ShoppingList.is_deleted == 0, ShoppingList.owner_id == user_id
+    )
     db_lists = session.exec(statement).all()
 
     result = []
@@ -112,6 +151,7 @@ def get_all_lists(session: Session) -> list[ShoppingListMinimal]:
                     name=shopping_list.name,
                     is_deleted=shopping_list.is_deleted,
                     created_at=shopping_list.created_at,
+                    # Count only pending (not completed) items.
                     items_count=sum(
                         1 for item in shopping_list.items if item.is_done == 0
                     ),

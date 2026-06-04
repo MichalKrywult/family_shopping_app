@@ -10,6 +10,8 @@ class ShoppingList(SQLModel, table=True):
     is_deleted: int = Field(default=0)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+    owner_id: Optional[int] = Field(default=None, foreign_key="users.id")
+
     items: List["Item"] = Relationship(back_populates="shopping_list")
 
 
@@ -25,7 +27,7 @@ class Item(SQLModel, table=True):
     list_id: int = Field(foreign_key="shopping_lists.id")
     shopping_list: Optional[ShoppingList] = Relationship(back_populates="items")
     owner_id: Optional[int] = Field(default=None, foreign_key="users.id")
-    owner: Optional[User] = Relationship(back_populates="shopping_items")
+
 
 
 class ItemRead(SQLModel):
