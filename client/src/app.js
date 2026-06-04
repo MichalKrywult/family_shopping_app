@@ -1,7 +1,7 @@
-// src/app.js
 import { initResponsive } from './shared/responsive.js';
 import { initShoppingModule } from './modules/shopping/shopping.view.js';
 import { authService } from './modules/auth/auth.service.js';
+import { navigationView } from './modules/navigation/navigation.view.js';
 
 async function bootstrap() {
     if (!authService.isLoggedIn()) {
@@ -11,6 +11,7 @@ async function bootstrap() {
 
     try {
         initResponsive();
+        navigationView.render();
         await initShoppingModule(); 
     } catch (error) {
         console.error("Something went wrong:", error);

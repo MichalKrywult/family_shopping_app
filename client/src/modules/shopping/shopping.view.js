@@ -1,5 +1,4 @@
 import * as shoppingService from './shopping.service.js';
-import { switchMobileView } from '../../shared/responsive.js';
 import { showToast } from '../../shared/toast.js';
 import { DOM } from '../../shared/dom.js'
 

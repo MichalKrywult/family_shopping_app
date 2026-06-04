@@ -1,17 +1,16 @@
 
 export const DOM = {
-    //global
+    // global / navigation
     sidebar: document.querySelector('.sidebar'),
     mainContent: document.querySelector('.main-content'),
-    btnSidebar: document.getElementById('navBtnSidebar'),
-    btnMain: document.getElementById('navBtnMain'),
-
+    btnSidebar: document.getElementById('navBtnSidebar'), // Upewnij się, że w HTML masz id="navBtnSidebar"
+    btnMain: document.getElementById('navBtnMain'),       // Upewnij się, że w HTML masz id="navBtnMain"
+    
     // shopping - lists
     listsDashboard: document.getElementById('listsDashboard'),
     listNameInput: document.getElementById('listName'),
     createListBtn: document.querySelector('#createListForm button'),
-    
-    // shopping - active list
+
     blankState: document.getElementById('blankState'),
     currentListCard: document.getElementById('currentListCard'),
     currentListName: document.getElementById('currentListName'),
