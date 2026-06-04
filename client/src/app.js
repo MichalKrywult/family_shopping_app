@@ -1,10 +1,24 @@
+// src/app.js
 import { initResponsive } from './shared/responsive.js';
 import { initShoppingModule } from './modules/shopping/shopping.view.js';
+import { authService } from './modules/auth/auth.service.js';
 
-function bootstrap() {
+async function bootstrap() {
+    if (!authService.isLoggedIn()) {
+        window.location.href = './login.html';
+        return;
+    }
 
-    initResponsive();
-    initShoppingModule();
+    try {
+        initResponsive();
+        await initShoppingModule(); 
+    } catch (error) {
+        console.error("Something went wrong:", error);
+        
+        if (error.message.includes("Not authenticated")) {
+            authService.logout(); 
+        }
+    }
 }
 
 document.addEventListener('DOMContentLoaded', bootstrap);

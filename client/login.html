@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register/Login</title>
+    <meta name="theme-color" content="#28a745">
+    <link rel="icon" type="image/x-icon" href="public/assets/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./src/css/auth.css">
+</head>
+<body>
+
+    <div id="login-box" class="auth-card">
+        <h2>Shopping App</h2>
+        <p class="auth-subtitle">Sign in to manage your shopping lists</p>
+        <form id="login-form">
+            <input type="text" id="login-username" placeholder="Username" required autocomplete="username">
+            <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password">
+            <button type="submit" class="btn-submit">Sign In</button>
+        </form>
+        <div class="auth-footer">
+            <span>Don't have an account?</span>
+            <button id="switch-to-register" class="btn-link">Create Account</button>
+        </div>
+    </div>
+
+    <div id="register-box" class="auth-card hidden">
+        <h2>Create Account</h2>
+        <p class="auth-subtitle">Join the shopping app</p>
+        <form id="register-form">
+            <input type="text" id="reg-username" placeholder="Username" required autocomplete="username">
+            <input type="email" id="reg-email" placeholder="Email address (optional)">
+            <input type="password" id="reg-password" placeholder="Password" required autocomplete="new-password">
+            <button type="submit" class="btn-submit">Create Account</button>
+        </form>
+        <div class="auth-footer">
+            <span>Already have an account?</span>
+            <button id="switch-to-login" class="btn-link">Sign In</button>
+        </div>
+    </div>
+
+    <script type="module" src="./src/modules/auth/auth.view.js"></script>
+</body>
+</html>

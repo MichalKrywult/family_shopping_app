@@ -28,6 +28,7 @@ class Item(SQLModel, table=True):
     shopping_list: Optional[ShoppingList] = Relationship(back_populates="items")
     owner_id: Optional[int] = Field(default=None, foreign_key="users.id")
 
+    owner: Optional["User"] = Relationship(back_populates="shopping_items") 
 
 
 class ItemRead(SQLModel):

@@ -13,11 +13,12 @@ class User(SQLModel, table=True):
     is_active: bool = Field(default=True)
 
     shopping_items: List["Item"] = Relationship(
-        back_populates="owner", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+        back_populates="owner",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
 
 
 class UserCreate(SQLModel):
     username: str
     password: str
-    email: str
+    email: Optional[str] = None

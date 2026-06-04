@@ -8,9 +8,14 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session, select
 from app.core.database import get_session
 from app.auth.models import User
+from passlib.context import CryptContext  # noqa
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+pwd_context = CryptContext(
+    schemes=["pbkdf2_sha256"], deprecated="auto"
+)  # DO NOT REMOVE
 
 
 def get_password_hash(password: str) -> str:
