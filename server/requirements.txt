@@ -2,3 +2,7 @@ fastapi
 uvicorn[standard]
 pydantic
 sqlmodel
+passlib[bcrypt]
+pyjwt
+pydantic-settings
+python-multipart

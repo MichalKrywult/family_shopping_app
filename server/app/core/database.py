@@ -1,6 +1,5 @@
-# app/core/database.py
 from pathlib import Path
-from sqlmodel import create_engine, Session, SQLModel
+from sqlmodel import Session, SQLModel, create_engine
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -16,14 +15,18 @@ engine = create_engine(
 
 
 def init_db():
-    """Inicjalizuje bazę danych i tworzy wszystkie tabele zdefiniowane w models.py"""
-    # import models - IMPORRTANT!!!
-    from app.shopping.models import ShoppingList, Item  # noqa
+    """Init db, tables and relations"""
+    from app.auth.models import User  # noqa
+    from app.shopping.models import Item, ShoppingList  # noqa
+
+    User.model_rebuild()
+    Item.model_rebuild()
+    ShoppingList.model_rebuild()
 
     SQLModel.metadata.create_all(engine)
 
 
 def get_session():
-    """Generator sesji dla FastAPI (Context Manager)"""
+    """Generetes session"""
     with Session(engine) as session:
         yield session
