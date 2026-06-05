@@ -10,7 +10,6 @@ async function bootstrap() {
     }
 
     try {
-        initResponsive();
         navigationView.render();
         await initShoppingModule(); 
     } catch (error) {

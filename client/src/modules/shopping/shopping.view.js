@@ -221,10 +221,63 @@ async function handleDeleteItem(event, itemId) {
 }
 
 export async function initShoppingModule() {
+    if (DOM.sidebarSlot) {
+        DOM.sidebarSlot.innerHTML = `
+            <div id="listsDashboard"></div>
+            <div id="createListForm" style="margin-top: 20px;">
+                <input type="text" id="listName" class="input-field mb-8" placeholder="New board name...">
+                <button class="w-100">+ Create List</button>
+            </div>
+        `;
+    }
+
+    if (DOM.mainSlot) {
+        DOM.mainSlot.innerHTML = `
+            <div id="blankState" class="card text-center text-muted">
+                <h2>Welcome to Shopping Boards!</h2>
+                <p>Select a board from the sidebar or create a new one to start shopping.</p>
+            </div>
+
+            <div class="card" id="currentListCard" style="display: none;">
+                <div class="list-header-row">
+                    <h2 id="currentListName" class="m-0">My List</h2>
+                    <button id="deleteListBtn" class="delete-btn">Delete Board</button>
+                </div>
+                
+                <div class="add-item-row">
+                    <input type="text" id="itemName" class="input-field flex-3" placeholder="Type...">
+                    <input type="number" id="itemQty" class="input-field flex-1" value="1" min="1">
+                    <button class="flex-1">Add</button>
+                </div>
+                <div id="itemsContainer"></div>
+            </div>
+
+            <div id="editModal" class="modal">
+                <div class="modal-content-card">
+                    <h3>✏️ Edit Item</h3>
+                    <input type="hidden" id="editItemId">
+                    <div class="mb-15">
+                        <label class="modal-label">Product Name</label>
+                        <input type="text" id="editItemNameInput" class="input-field w-100">
+                    </div>
+                    <div class="mb-20">
+                        <label class="modal-label">Quantity</label>
+                        <input type="number" id="editItemQtyInput" class="input-field w-100" min="1">
+                    </div>
+                    <div class="modal-actions">
+                        <button class="delete-btn cancel-btn">Cancel</button>
+                        <button>Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     DOM.createListBtn.addEventListener('click', handleCreateList);
     DOM.addItemBtn.addEventListener('click', handleAddItem);
     DOM.cancelEditBtn.addEventListener('click', () => DOM.editModal.style.display = 'none');
     DOM.saveEditBtn.addEventListener('click', saveEditItem);
+
 
     await renderListsDashboard();
 
@@ -236,5 +289,4 @@ export async function initShoppingModule() {
             shoppingService.setCurrentListId(null);
         }
     }
-
 }
