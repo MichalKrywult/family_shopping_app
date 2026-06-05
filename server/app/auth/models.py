@@ -1,5 +1,10 @@
-from typing import List, Optional, ClassVar
+from typing import List, Optional, ClassVar, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
+from app.spaces.models import UserSpaceLink
+
+if TYPE_CHECKING:
+    from app.shopping.models import Item
+    from app.spaces.models import Space
 
 
 class User(SQLModel, table=True):
@@ -15,6 +20,10 @@ class User(SQLModel, table=True):
     shopping_items: List["Item"] = Relationship(
         back_populates="owner",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
+
+    spaces: List["Space"] = Relationship(
+        back_populates="members", link_model=UserSpaceLink
     )
 
 

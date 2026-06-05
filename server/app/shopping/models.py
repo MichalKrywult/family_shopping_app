@@ -1,19 +1,23 @@
 from datetime import datetime
-from typing import ClassVar, List, Optional
+from typing import ClassVar, List, Optional, TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
 
+if TYPE_CHECKING:
+    from app.auth.models import User
+    from app.spaces.models import Space
 
 class ShoppingList(SQLModel, table=True):
     __tablename__: ClassVar[str] = "shopping_lists"
+
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(nullable=False)
     is_deleted: int = Field(default=0)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
-    owner_id: Optional[int] = Field(default=None, foreign_key="users.id")
+    space_id: int = Field(foreign_key="spaces.id", nullable=False)
+    space: Optional["Space"] = Relationship(back_populates="shopping_lists")
 
-    items: List["Item"] = Relationship(back_populates="shopping_list")
-
+    items: List["Item"] = Relationship(back_populates="shopping_list", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
 class Item(SQLModel, table=True):
     __tablename__: ClassVar[str] = "items"
@@ -26,8 +30,8 @@ class Item(SQLModel, table=True):
 
     list_id: int = Field(foreign_key="shopping_lists.id")
     shopping_list: Optional[ShoppingList] = Relationship(back_populates="items")
+    
     owner_id: Optional[int] = Field(default=None, foreign_key="users.id")
-
     owner: Optional["User"] = Relationship(back_populates="shopping_items") 
 
 

@@ -18,10 +18,13 @@ def init_db():
     """Init db, tables and relations"""
     from app.auth.models import User  # noqa
     from app.shopping.models import Item, ShoppingList  # noqa
+    from app.spaces.models import Space, UserSpaceLink  # noqa
 
     User.model_rebuild()
     Item.model_rebuild()
     ShoppingList.model_rebuild()
+    Space.model_rebuild()
+    UserSpaceLink.model_rebuild()
 
     SQLModel.metadata.create_all(engine)
 
