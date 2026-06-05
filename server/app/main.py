@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.shopping.router import router as shopping_router
 from app.auth.router import router as auth_router
+from app.spaces.router import router as spaces_router
 from app.core.database import init_db
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -31,6 +32,7 @@ app.add_middleware(
 
 app.include_router(shopping_router)
 app.include_router(auth_router)
+app.include_router(spaces_router)
 
 
 CLIENT_DIR = Path(__file__).resolve().parent.parent.parent / "client"

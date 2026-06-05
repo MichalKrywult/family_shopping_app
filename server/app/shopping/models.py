@@ -6,6 +6,7 @@ if TYPE_CHECKING:
     from app.auth.models import User
     from app.spaces.models import Space
 
+
 class ShoppingList(SQLModel, table=True):
     __tablename__: ClassVar[str] = "shopping_lists"
 
@@ -17,7 +18,11 @@ class ShoppingList(SQLModel, table=True):
     space_id: int = Field(foreign_key="spaces.id", nullable=False)
     space: Optional["Space"] = Relationship(back_populates="shopping_lists")
 
-    items: List["Item"] = Relationship(back_populates="shopping_list", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    items: List["Item"] = Relationship(
+        back_populates="shopping_list",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
+
 
 class Item(SQLModel, table=True):
     __tablename__: ClassVar[str] = "items"
@@ -29,10 +34,10 @@ class Item(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     list_id: int = Field(foreign_key="shopping_lists.id")
-    shopping_list: Optional[ShoppingList] = Relationship(back_populates="items")
-    
+    shopping_list: ShoppingList = Relationship(back_populates="items")
+
     owner_id: Optional[int] = Field(default=None, foreign_key="users.id")
-    owner: Optional["User"] = Relationship(back_populates="shopping_items") 
+    owner: Optional["User"] = Relationship(back_populates="shopping_items")
 
 
 class ItemRead(SQLModel):

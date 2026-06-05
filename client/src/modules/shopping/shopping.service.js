@@ -1,4 +1,5 @@
 import { apiRequest } from '../../core/api.js';
+import { currentSpaceId } from '../spaces/spaces.service.js';
 
 export let currentListId = localStorage.getItem('active_board_id') 
     ? parseInt(localStorage.getItem('active_board_id')) 
@@ -14,11 +15,15 @@ export function setCurrentListId(id) {
 }
 
 export async function getAllLists() {
-    return await apiRequest('/shopping/');
+    const spaceId = localStorage.getItem('active_space_id');
+    if (!spaceId) return [];
+    return await apiRequest(`/shopping/?space_id=${spaceId}`);
 }
 
 export async function createNewList(name) {
-    const data = await apiRequest('/shopping/', 'POST', { name: name });
+    const spaceId = localStorage.getItem('active_space_id');
+    if (!spaceId) throw new Error("You have to select or create new space first!");
+    const data = await apiRequest(`/shopping/?space_id=${spaceId}`, 'POST', { name: name });
     currentListId = data.id;
     return data;
 }
@@ -54,4 +59,3 @@ export async function editItem(itemId, name, quantity) {
 export async function deleteList(listId) {
     return await apiRequest(`/shopping/${listId}`, 'DELETE');
 }
-
