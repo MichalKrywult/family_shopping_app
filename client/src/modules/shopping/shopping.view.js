@@ -1,27 +1,27 @@
 import * as shoppingService from './shopping.service.js';
 import * as spacesService from '../spaces/spaces.service.js';
 import { showToast } from '../../shared/toast.js';
-import { DOM } from '../../shared/dom.js';
 
 async function refreshShoppingUI() {
     const hasSpace = spacesService.currentSpaceId !== null;
     const createListForm = document.getElementById('createListForm');
+    const listsDashboard = document.getElementById('listsDashboard');
+    const blankState = document.getElementById('blankState');
+    const currentListCard = document.getElementById('currentListCard');
     
     if (!hasSpace) {
         if (createListForm) createListForm.style.display = 'none';
-        DOM.listsDashboard.innerHTML = '';
-        const blankState = document.getElementById('blankState');
+        if (listsDashboard) listsDashboard.innerHTML = '';
         if (blankState) {
             blankState.innerHTML = `
                 <h2>No Active Space</h2>
-                <p>You don't belong to any shopping space yet. Create or select one in the sidebar above!</p>
+                <p>Create or select a space from the dropdown on top of the sidebar to manage lists!</p>
             `;
         }
         return;
     }
 
     if (createListForm) createListForm.style.display = 'block';
-    const blankState = document.getElementById('blankState');
     if (blankState) {
         blankState.innerHTML = `
             <h2>Welcome to Shopping Boards!</h2>
@@ -31,7 +31,6 @@ async function refreshShoppingUI() {
 
     await renderListsDashboard();
 
-    const currentListCard = document.getElementById('currentListCard');
     if (shoppingService.currentListId) {
         const currentList = await shoppingService.loadListItems();
         if (currentList) {
@@ -156,6 +155,11 @@ async function handleSelectList(listId, listName) {
     }
 
     await updateUI();
+    
+    if (window.innerWidth <= 768) {
+        const { switchMobileView } = await import('../../shared/responsive.js');
+        switchMobileView('main');
+    }
 }
 
 async function handleCreateList() {
@@ -255,7 +259,7 @@ export async function initShoppingModule() {
 
     if (sidebarSlot) {
         sidebarSlot.innerHTML = `
-            <div id="listsDashboard"></div>
+            <div id="listsDashboard" style="flex: 1; overflow-y: auto;"></div>
             <div id="createListForm" style="margin-top: 20px;">
                 <input type="text" id="listName" class="input-field mb-8" placeholder="New board name...">
                 <button id="createListBtn" class="w-100">+ Create List</button>

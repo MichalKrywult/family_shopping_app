@@ -13,24 +13,34 @@ export const navigationView = {
                 <button id="navBtnMain" class="nav-item">🛒 Active List</button>
             </div>
 
-            <div class="sidebar" style="display: flex; flex-direction: column; height: 100%;">
-                <div class="global-spaces-wrapper" style="padding-bottom: 15px; border-bottom: 1px solid #ddd; margin-bottom: 15px;">
-                    <h3 style="margin-top: 0;">🏠 Spaces</h3>
-                    <div id="spacesSelectorContainer"></div>
+            <div class="sidebar">
+                <div class="space-header-zone" style="padding-bottom: 15px; border-bottom: 1px solid var(--border); margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                        <div id="spaceDropdownWrapper" style="flex: 1;"></div>
+                        <button id="navBtnManageSpace" class="btn-secondary font-sm" style="padding: 5px 8px; font-size: 12px;" title="Manage Space Members">⚙️ Space</button>
+                    </div>
                 </div>
 
-                <div class="module-content-wrapper" style="flex: 1; overflow-y: auto;">
-                    <h3>📋 Boards</h3>
-                    <div id="shopping-sidebar-slot"></div>
-                </div>
+                <div id="shopping-sidebar-slot" style="flex: 1; display: flex; flex-direction: column; overflow-y: auto;"></div>
                 
-                <div class="sidebar-footer" style="margin-top: auto; padding-top: 15px; border-top: 1px solid #ddd;">
-                    <button id="navBtnLogout" class="delete-btn w-100">🚪 Logout</button>
+                <div class="sidebar-footer" style="margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border);">
+                    <button id="navBtnLogout" class="delete-btn w-100" style="font-size: 13px; padding: 8px;">🚪 Logout</button>
                 </div>
             </div>
 
             <div class="main-content">
                 <div class="container" id="shopping-main-slot"></div>
+            </div>
+
+            <div id="spaceManagementModal" class="modal" style="display: none;">
+                <div class="modal-content-card">
+                    <h3>👥 Space Settings</h3>
+                    <div id="modalSpaceActions"></div>
+                    <hr style="border:0; border-top:1px solid var(--border); margin: 15px 0;">
+                    <div class="modal-actions">
+                        <button id="closeSpaceModalBtn" class="w-100">Close</button>
+                    </div>
+                </div>
             </div>
         `;
 
@@ -40,39 +50,34 @@ export const navigationView = {
         }
 
         this.initEvents();
-        await this.renderSpaces();
+        await this.renderSpacesControl();
     },
 
-    async renderSpaces() {
-        const container = document.getElementById('spacesSelectorContainer');
+    async renderSpacesControl() {
+        const container = document.getElementById('spaceDropdownWrapper');
         if (!container) return;
 
         const spaces = await spacesService.fetchUserSpaces();
 
         if (spaces.length === 0) {
-            container.innerHTML = `
-                <p class="text-muted font-italic font-sm mb-8">You are not in any space.</p>
-                <button id="sidebarCreateSpaceBtn" class="w-100 btn-secondary">+ Create Space</button>
-            `;
-            document.getElementById('sidebarCreateSpaceBtn').addEventListener('click', () => this.handleCreateSpace());
+            container.innerHTML = `<button id="navCreateSpaceBtn" class="btn-success w-100" style="padding: 6px; font-size: 13px;">+ Create Space</button>`;
+            document.getElementById('navCreateSpaceBtn').addEventListener('click', () => this.handleCreateSpace());
+            this.toggleManageButton(false);
             return;
         }
+
+        this.toggleManageButton(true);
 
         let optionsHtml = spaces.map(space => 
             `<option value="${space.id}" ${space.id === spacesService.currentSpaceId ? 'selected' : ''}>🏠 ${space.name}</option>`
         ).join('');
 
         container.innerHTML = `
-            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                <select id="spaceSelect" class="input-field" style="flex: 1; cursor: pointer;">
+            <div style="display: flex; gap: 4px; width: 100%;">
+                <select id="spaceSelect" class="input-field" style="cursor: pointer; font-weight: bold; padding: 4px; font-size: 13px; flex: 1;">
                     ${optionsHtml}
                 </select>
-                <button id="sidebarCreateSpaceBtn" title="Create new space" style="padding: 0 12px;">+</button>
-                <button id="sidebarDeleteSpaceBtn" title="Leave/Delete space" class="delete-btn" style="padding: 0 12px;">🗑️</button>
-            </div>
-            <div style="display: flex; gap: 8px;">
-                <input type="text" id="inviteUsernameInput" class="input-field font-sm" placeholder="Invite user..." style="flex: 1; height: 32px;">
-                <button id="inviteUserBtn" class="font-sm" style="padding: 0 10px; height: 32px;">Invite</button>
+                <button id="navCreateSpaceBtn" title="Create new space" style="padding: 0 8px; font-size: 13px;">+</button>
             </div>
         `;
 
@@ -84,29 +89,12 @@ export const navigationView = {
             await initShoppingModule();
         });
 
-        document.getElementById('sidebarCreateSpaceBtn').addEventListener('click', () => this.handleCreateSpace());
-        
-        document.getElementById('sidebarDeleteSpaceBtn').addEventListener('click', async () => {
-            if (!confirm("Are you sure you want to leave or delete this space?")) return;
-            await spacesService.deleteSpace(spacesService.currentSpaceId);
-            shoppingService.setCurrentListId(null);
-            await this.renderSpaces();
-            
-            const { initShoppingModule } = await import('../shopping/shopping.view.js');
-            await initShoppingModule();
-            showToast("Space updated", "info");
-        });
+        document.getElementById('navCreateSpaceBtn').addEventListener('click', () => this.handleCreateSpace());
+    },
 
-        document.getElementById('inviteUserBtn').addEventListener('click', async () => {
-            const username = document.getElementById('inviteUsernameInput').value.trim();
-            if (!username) return showToast("Enter username!", "error");
-            try {
-                await spacesService.addMemberToSpace(spacesService.currentSpaceId, username);
-                showToast(`User ${username} added to space!`, "success");
-                document.getElementById('inviteUsernameInput').value = '';
-            } catch (e) {
-            }
-        });
+    toggleManageButton(show) {
+        const btn = document.getElementById('navBtnManageSpace');
+        if (btn) btn.style.display = show ? 'block' : 'none';
     },
 
     async handleCreateSpace() {
@@ -114,11 +102,58 @@ export const navigationView = {
         if (!name || !name.trim()) return;
         await spacesService.createSpace(name.trim());
         shoppingService.setCurrentListId(null);
-        await this.renderSpaces();
+        await this.renderSpacesControl();
         
         const { initShoppingModule } = await import('../shopping/shopping.view.js');
         await initShoppingModule();
         showToast(`Space "${name}" created!`, "success");
+    },
+
+    openManagementModal() {
+        const modal = document.getElementById('spaceManagementModal');
+        const actionsContainer = document.getElementById('modalSpaceActions');
+        if (!modal || !actionsContainer) return;
+
+        const currentSpace = spacesService.spacesList.find(s => s.id === spacesService.currentSpaceId);
+        const spaceName = currentSpace ? currentSpace.name : 'Current Space';
+
+        actionsContainer.innerHTML = `
+            <p>Managing space: <strong>${spaceName}</strong></p>
+            <div style="margin-top: 15px;">
+                <label class="modal-label" style="font-size: 13px; font-weight: 600;">Add user to this space:</label>
+                <div style="display: flex; gap: 8px; margin-top: 5px;">
+                    <input type="text" id="modalInviteInput" class="input-field" placeholder="Username (nick)...">
+                    <button id="modalInviteBtn" class="btn-primary">Add</button>
+                </div>
+            </div>
+            <div style="margin-top: 30px;">
+                <button id="modalDeleteSpaceBtn" class="delete-btn w-100" style="padding: 10px;">🗑️ Leave / Delete Space</button>
+            </div>
+        `;
+
+        modal.style.display = 'flex';
+
+        document.getElementById('modalInviteBtn').addEventListener('click', async () => {
+            const username = document.getElementById('modalInviteInput').value.trim();
+            if (!username) return showToast("Enter username!", "error");
+            try {
+                await spacesService.addMemberToSpace(spacesService.currentSpaceId, username);
+                showToast(`User ${username} added!`, "success");
+                document.getElementById('modalInviteInput').value = '';
+            } catch (e) {}
+        });
+
+        document.getElementById('modalDeleteSpaceBtn').addEventListener('click', async () => {
+            if (!confirm("Delete or leave this space? Structural boards inside will be lost.")) return;
+            await spacesService.deleteSpace(spacesService.currentSpaceId);
+            shoppingService.setCurrentListId(null);
+            modal.style.display = 'none';
+            
+            await this.renderSpacesControl();
+            const { initShoppingModule } = await import('../shopping/shopping.view.js');
+            await initShoppingModule();
+            showToast("Space removed", "info");
+        });
     },
 
     initEvents() {
@@ -130,6 +165,18 @@ export const navigationView = {
                 if (confirm('Are you sure you want to logout?')) {
                     authService.logout();
                 }
+            });
+        }
+
+        const manageBtn = document.getElementById('navBtnManageSpace');
+        if (manageBtn) {
+            manageBtn.addEventListener('click', () => this.openManagementModal());
+        }
+
+        const closeModalBtn = document.getElementById('closeSpaceModalBtn');
+        if (closeSpaceModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                document.getElementById('spaceManagementModal').style.display = 'none';
             });
         }
     }
