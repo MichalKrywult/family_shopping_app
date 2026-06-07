@@ -72,3 +72,29 @@ def delete_space(
             detail="Space not found or access denied",
         )
     return {"message": "Space deleted successfully"}
+
+
+@router.put("/{space_id}")
+def edit_space_name(
+    space_id: int,
+    space_data: SpaceCreate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Edits the name of a space (Owner only)."""
+    assert current_user.id is not None
+
+    success = service.edit_space_name(
+        session=session,
+        space_id=space_id,
+        current_user_id=current_user.id,
+        name=space_data.name,
+    )
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Space not found or access denied",
+        )
+
+    return {"message": "Space name edited successfully"}

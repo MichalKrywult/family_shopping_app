@@ -118,8 +118,14 @@ export const navigationView = {
         const spaceName = currentSpace ? currentSpace.name : 'Current Space';
 
         actionsContainer.innerHTML = `
-            <p>Managing space: <strong>${spaceName}</strong></p>
+            <p>Managing space: <strong id="modalSpaceName">${spaceName}</strong></p>
             <div style="margin-top: 15px;">
+                <label class="modal-label" style="font-size: 13px; font-weight: 600;">Edit space name:</label>
+                <div style="display: flex; gap: 8px; margin-top: 5px;">
+                    <input type="text" id="modalEditNameInput" class="input-field" placeholder="New name...">
+                    <button id="modalEditNameBtn" class="btn-primary">Edit</button>
+                </div>
+                <br>
                 <label class="modal-label" style="font-size: 13px; font-weight: 600;">Add user to this space:</label>
                 <div style="display: flex; gap: 8px; margin-top: 5px;">
                     <input type="text" id="modalInviteInput" class="input-field" placeholder="Username (nick)...">
@@ -142,6 +148,19 @@ export const navigationView = {
                 document.getElementById('modalInviteInput').value = '';
             } catch (e) {}
         });
+
+        document.getElementById('modalEditNameBtn').addEventListener('click', async () => {
+            const new_name = document.getElementById('modalEditNameInput').value.trim();
+            if (!new_name) return showToast("Enter new space name!", "error");
+            try {
+                await spacesService.editSpaceName(spacesService.currentSpaceId, new_name);
+                showToast(`Space name edited successfully!`, "success");
+                document.getElementById('modalEditNameInput').value = '';
+                document.getElementById("modalSpaceName").textContent = new_name;
+                await this.renderSpacesControl();
+            } catch (e) {}
+        });
+
 
         document.getElementById('modalDeleteSpaceBtn').addEventListener('click', async () => {
             if (!confirm("Delete or leave this space? Structural boards inside will be lost.")) return;

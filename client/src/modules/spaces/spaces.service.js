@@ -46,3 +46,7 @@ export async function deleteSpace(spaceId) {
 export async function addMemberToSpace(spaceId, username) {
     return await apiRequest(`/spaces/${spaceId}/members`, 'POST', { username });
 }
+
+export async function editSpaceName(spaceId,name){
+    return await apiRequest(`/spaces/${spaceId}`,'PUT',{ name })
+}

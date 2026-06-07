@@ -68,3 +68,16 @@ def delete_space(session: Session, space_id: int, current_user_id: int) -> bool:
     session.commit()
 
     return True
+
+
+def edit_space_name(
+    session: Session, space_id: int, current_user_id: int, name: str
+) -> bool:
+    """Edit space name if the user is the owner."""
+    db_space = session.get(Space, space_id)
+    if not db_space or db_space.owner_id != current_user_id:
+        return False
+
+    db_space.name = name
+    session.commit()
+    return True
