@@ -12,6 +12,7 @@ class User(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
     username: str = Field(unique=True, index=True, nullable=False)
+    display_name: Optional[str] = Field(default=None, nullable=True)
     email: Optional[str] = Field(default=None, unique=True, index=True, nullable=True)
 
     hashed_password: str = Field(nullable=False)

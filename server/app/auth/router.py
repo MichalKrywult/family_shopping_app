@@ -35,6 +35,7 @@ def register_user(user_data: UserCreate, session: Session = Depends(get_session)
 
     db_user = User(
         username=user_data.username,
+        display_name=user_data.username,
         email=user_data.email,
         hashed_password=hashed_password,
         is_active=True,
@@ -47,6 +48,7 @@ def register_user(user_data: UserCreate, session: Session = Depends(get_session)
     return {
         "message": "User registered successfully.",
         "username": db_user.username,
+        "display_name": db_user.display_name,
     }
 
 
@@ -55,7 +57,7 @@ def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(get_session),
 ):
-    """Authenticate a user and return a JWT access token."""
+    """Authenticate a user and return a JWT access token with profile data."""
 
     statement = select(User).where(User.username == form_data.username)
     user = session.exec(statement).first()
@@ -77,7 +79,11 @@ def login_for_access_token(
 
     access_token_expires = timedelta(days=settings.ACCESS_TOKEN_EXPIRE_DAYS)
     access_token = auth_service.create_access_token(
-        data={"sub": str(user.id)},
+        data={
+            "sub": str(user.id),
+            "username": user.username,
+            "display_name": user.display_name or user.username,
+        },
         expires_delta=access_token_expires,
     )
 

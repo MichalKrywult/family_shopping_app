@@ -69,11 +69,18 @@ export const authService = {
     },
 
     /**
-     * 
      * @returns {string}
      */
-    getCurrentUsername() {
+    getCurrentDisplayName() {
         const payload = this.getTokenPayload();
-        return payload && payload.sub ? payload.sub : 'Profile';
+        return payload && payload.display_name ? payload.display_name : 'Profile';
+    },
+
+    /**
+     * @returns {string}
+     */
+    getCurrentHandle() {
+        const payload = this.getTokenPayload();
+        return payload && payload.username ? payload.username : '';
     }
 };
