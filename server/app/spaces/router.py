@@ -5,6 +5,7 @@ from app.auth.service import get_current_user
 from app.auth.models import User
 from app.spaces.models import SpaceRead, SpaceCreate, SpaceUserAdd
 from . import service
+from app.spaces.models import Space
 
 router = APIRouter(prefix="/spaces", tags=["Spaces"])
 
@@ -98,3 +99,62 @@ def edit_space_name(
         )
 
     return {"message": "Space name edited successfully"}
+
+
+@router.get("/{space_id}/members")
+def get_space_members(
+    space_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Retrieves all members of a specific space."""
+    assert current_user.id is not None
+
+    members = service.get_space_members_list(
+        session, space_id=space_id, current_user_id=current_user.id
+    )
+
+    if members is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied to this space or space does not exist",
+        )
+
+    space = session.get(Space, space_id)
+    assert space is not None
+
+    return [
+        {
+            "id": m.id,
+            "username": m.username,
+            "display_name": m.display_name or m.username,
+            "is_owner": m.id == space.owner_id,
+        }
+        for m in members
+    ]
+
+
+@router.delete("/{space_id}/members/{user_id}")
+def remove_member(
+    space_id: int,
+    user_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Removes a member from a space (Owner only)."""
+    assert current_user.id is not None
+
+    success = service.remove_member_from_space(
+        session,
+        space_id=space_id,
+        user_id_to_remove=user_id,
+        current_user_id=current_user.id,
+    )
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Could not remove member. Verify ownership, user status, or database links.",
+        )
+
+    return {"message": "Member removed successfully"}

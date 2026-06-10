@@ -50,3 +50,10 @@ export async function addMemberToSpace(spaceId, username) {
 export async function editSpaceName(spaceId,name){
     return await apiRequest(`/spaces/${spaceId}`,'PUT',{ name })
 }
+export async function fetchSpaceMembers(spaceId) {
+    return await apiRequest(`/spaces/${spaceId}/members`);
+}
+
+export async function removeMemberFromSpace(spaceId, userId) {
+    return await apiRequest(`/spaces/${spaceId}/members/${userId}`, 'DELETE');
+}

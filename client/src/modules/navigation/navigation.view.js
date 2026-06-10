@@ -7,10 +7,8 @@ import { showToast } from '../../shared/toast.js';
 
 export const navigationView = {
     async render() {
-        
         const displayName = authService.getCurrentDisplayName();
         const handle = authService.getCurrentHandle();
-        
         const userInitials = displayName.substring(0, 2).toUpperCase();
 
         const layoutHTML = `
@@ -149,69 +147,142 @@ export const navigationView = {
         showToast(`Space "${name}" created!`, "success");
     },
 
-    openManagementModal() {
+    async openManagementModal() {
         const modal = document.getElementById('spaceManagementModal');
         const actionsContainer = document.getElementById('modalSpaceActions');
         if (!modal || !actionsContainer) return;
 
-        const currentSpace = spacesService.spacesList.find(s => s.id === spacesService.currentSpaceId);
-        const spaceName = currentSpace ? currentSpace.name : 'Current Space';
+        const currentSpaceId = spacesService.currentSpaceId;
 
-        actionsContainer.innerHTML = `
-            <p>Managing space: <strong id="modalSpaceName">${spaceName}</strong></p>
-            <div style="margin-top: 15px;">
+        actionsContainer.innerHTML = `<p class="text-muted" style="font-size: 13px; text-align: center; padding: 10px;">Loading space data...</p>`;
+        modal.style.display = 'flex';
+
+        try {
+            const members = await spacesService.fetchSpaceMembers(currentSpaceId);
+
+            let spaces = spacesService.spacesList;
+            if (!spaces || spaces.length === 0) {
+                spaces = await spacesService.fetchUserSpaces();
+            }
+            const currentSpace = spaces.find(s => s.id === currentSpaceId);
+            const spaceName = currentSpace ? currentSpace.name : 'Current Space';
+
+            const membersListHtml = members.map(member => {
+                return `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px; background: rgba(0,0,0,0.02); border-radius: 6px; margin-bottom: 6px; border: 1px solid var(--border);">
+                        <div style="display: flex; flex-direction: column; min-width: 0; padding-right: 8px;">
+                            <span style="font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                ${member.display_name} ${member.is_owner ? '' : ''}
+                            </span>
+                            <span style="font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@${member.username}</span>
+                        </div>
+                        ${!member.is_owner ? `
+                            <button class="kick-member-btn delete-btn" data-user-id="${member.id}" data-username="${member.username}" style="padding: 4px 8px; font-size: 12px; flex-shrink: 0;">
+                                Remove
+                            </button>
+                        ` : '<span style="font-size: 11px; color: var(--muted); font-style: italic; padding-right: 5px; flex-shrink: 0;">Owner</span>'}
+                    </div>
+                `;
+            }).join('');
+
+            actionsContainer.innerHTML = `
+                <p>Managing space: <strong id="modalSpaceName">${spaceName}</strong></p>
+
                 <label class="modal-label" style="font-size: 13px; font-weight: 600;">Edit space name:</label>
-                <div style="display: flex; gap: 8px; margin-top: 5px;">
+                <div style="display: flex; gap: 8px; margin-top: 5px; margin-bottom: 15px;">
                     <input type="text" id="modalEditNameInput" class="input-field" placeholder="New name...">
                     <button id="modalEditNameBtn" class="btn-primary">Edit</button>
                 </div>
-                <br>
-                <label class="modal-label" style="font-size: 13px; font-weight: 600;">Add user to this space:</label>
-                <div style="display: flex; gap: 8px; margin-top: 5px;">
-                    <input type="text" id="modalInviteInput" class="input-field" placeholder="Username (nick)...">
-                    <button id="modalInviteBtn" class="btn-primary">Add</button>
+
+                <div style="margin-top: 15px;">
+                    <label class="modal-label" style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 5px;">Current Members:</label>
+                    <div id="modalMembersList" style="max-height: 160px; overflow-y: auto; margin-bottom: 15px; padding-right: 2px;">
+                        ${membersListHtml || '<p class="text-muted" style="font-size: 12px;">No members found.</p>'}
+                    </div>
+                    
+                    <label class="modal-label" style="font-size: 13px; font-weight: 600;">Add user to this space:</label>
+                    <div style="display: flex; gap: 8px; margin-top: 5px;">
+                        <input type="text" id="modalInviteInput" class="input-field" placeholder="Username (nick)...">
+                        <button id="modalInviteBtn" class="btn-primary">Add</button>
+                    </div>
                 </div>
-            </div>
-            <div style="margin-top: 30px;">
-                <button id="modalDeleteSpaceBtn" class="delete-btn w-100" style="padding: 10px;">🗑️ Leave / Delete Space</button>
-            </div>
-        `;
+                <div style="margin-top: 25px;">
+                    <button id="modalDeleteSpaceBtn" class="delete-btn w-100" style="padding: 10px;">🗑️ Leave / Delete Space</button>
+                </div>
+            `;
 
-        modal.style.display = 'flex';
+            document.querySelectorAll('.kick-member-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const button = e.currentTarget;
+                    const userId = button.getAttribute('data-user-id');
+                    const targetUsername = button.getAttribute('data-username');
+                    
+                    if (!confirm(`Are you sure you want to remove @${targetUsername} from this space?`)) return;
+                    
+                    try {
+                        button.disabled = true;
+                        await spacesService.removeMemberFromSpace(currentSpaceId, userId);
+                        showToast(`User @${targetUsername} removed.`, "info");
+                        this.openManagementModal();
+                    } catch (err) {
+                        button.disabled = false;
+                        showToast(err.message || "Failed to remove member", "error");
+                    }
+                });
+            });
 
-        document.getElementById('modalInviteBtn').addEventListener('click', async () => {
-            const username = document.getElementById('modalInviteInput').value.trim();
-            if (!username) return showToast("Enter username!", "error");
-            try {
-                await spacesService.addMemberToSpace(spacesService.currentSpaceId, username);
-                showToast(`User ${username} added!`, "success");
-                document.getElementById('modalInviteInput').value = '';
-            } catch (e) {}
-        });
+            document.getElementById('modalInviteBtn').addEventListener('click', async (e) => {
+                const button = e.currentTarget;
+                const username = document.getElementById('modalInviteInput').value.trim();
+                if (!username) return showToast("Enter username!", "error");
+                try {
+                    button.disabled = true;
+                    await spacesService.addMemberToSpace(currentSpaceId, username);
+                    showToast(`User ${username} added!`, "success");
+                    this.openManagementModal(); 
+                } catch (e) {
+                    button.disabled = false;
+                }
+            });
 
-        document.getElementById('modalEditNameBtn').addEventListener('click', async () => {
-            const new_name = document.getElementById('modalEditNameInput').value.trim();
-            if (!new_name) return showToast("Enter new space name!", "error");
-            try {
-                await spacesService.editSpaceName(spacesService.currentSpaceId, new_name);
-                showToast(`Space name edited successfully!`, "success");
-                document.getElementById('modalEditNameInput').value = '';
-                document.getElementById("modalSpaceName").textContent = new_name;
-                await this.renderSpacesControl();
-            } catch (e) {}
-        });
+            document.getElementById('modalEditNameBtn').addEventListener('click', async (e) => {
+                const button = e.currentTarget;
+                const new_name = document.getElementById('modalEditNameInput').value.trim();
+                if (!new_name) return showToast("Enter new space name!", "error");
+                try {
+                    button.disabled = true;
+                    await spacesService.editSpaceName(currentSpaceId, new_name);
+                    showToast(`Space name edited successfully!`, "success");
+                    document.getElementById('modalEditNameInput').value = '';
+                    document.getElementById("modalSpaceName").textContent = new_name;
+                    await this.renderSpacesControl();
+                    button.disabled = false;
+                } catch (e) {
+                    button.disabled = false;
+                }
+            });
 
-        document.getElementById('modalDeleteSpaceBtn').addEventListener('click', async () => {
-            if (!confirm("Delete or leave this space? Structural boards inside will be lost.")) return;
-            await spacesService.deleteSpace(spacesService.currentSpaceId);
-            shoppingService.setCurrentListId(null);
-            modal.style.display = 'none';
-            
-            await this.renderSpacesControl();
-            const { initShoppingModule } = await import('../shopping/shopping.view.js');
-            await initShoppingModule();
-            showToast("Space removed", "info");
-        });
+            document.getElementById('modalDeleteSpaceBtn').addEventListener('click', async (e) => {
+                const button = e.currentTarget;
+                if (!confirm("Delete or leave this space? Structural boards inside will be lost.")) return;
+                try {
+                    button.disabled = true;
+                    await spacesService.deleteSpace(currentSpaceId);
+                    shoppingService.setCurrentListId(null);
+                    modal.style.display = 'none';
+                    
+                    await this.renderSpacesControl();
+                    const { initShoppingModule } = await import('../shopping/shopping.view.js');
+                    await initShoppingModule();
+                    showToast("Space removed", "info");
+                } catch (e) {
+                    button.disabled = false;
+                }
+            });
+
+        } catch (error) {
+            actionsContainer.innerHTML = `<p style="color: var(--danger); font-size: 13px; text-align: center;">Error loading workspace members.</p>`;
+        }
     },
 
     initEvents() {
