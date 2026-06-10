@@ -32,10 +32,16 @@ async function refreshShoppingUI() {
     await renderListsDashboard();
 
     if (shoppingService.currentListId) {
-        const currentList = await shoppingService.loadListItems();
-        if (currentList) {
-            await handleSelectList(currentList.id, currentList.name);
-        } else {
+        try {
+            const currentList = await shoppingService.loadListItems();
+            if (currentList) {
+                await handleSelectList(currentList.id, currentList.name);
+            } else {
+                shoppingService.setCurrentListId(null);
+                if (currentListCard) currentListCard.style.display = 'none';
+                if (blankState) blankState.style.display = 'block';
+            }
+        } catch (err) {
             shoppingService.setCurrentListId(null);
             if (currentListCard) currentListCard.style.display = 'none';
             if (blankState) blankState.style.display = 'block';
@@ -143,14 +149,16 @@ async function handleSelectList(listId, listName) {
     if (deleteListBtn) {
         deleteListBtn.onclick = async () => {
             if (!confirm(`Are you sure you want to delete board "${listName}"?`)) return;
-            await shoppingService.deleteList(listId);
-
-            if (currentListCard) currentListCard.style.display = 'none';
-            if (blankState) blankState.style.display = 'block';
-            shoppingService.setCurrentListId(null);
-
-            await renderListsDashboard();
-            showToast(`Board "${listName}" deleted`, 'info');
+            try {
+                await shoppingService.deleteList(listId);
+                if (currentListCard) currentListCard.style.display = 'none';
+                if (blankState) blankState.style.display = 'block';
+                shoppingService.setCurrentListId(null);
+                await renderListsDashboard();
+                showToast(`Board "${listName}" deleted`, 'info');
+            } catch (err) {
+                showToast("Failed to delete board", "error");
+            }
         };
     }
 
@@ -167,12 +175,15 @@ async function handleCreateList() {
     const name = input ? input.value.trim() : '';
     if (!name) return showToast('Enter a board name!', 'error'); 
     
-    await shoppingService.createNewList(name);
-    if (input) input.value = '';
-
-    await renderListsDashboard();
-    await handleSelectList(shoppingService.currentListId, name);
-    showToast(`Board "${name}" created successfully!`, 'success');
+    try {
+        await shoppingService.createNewList(name);
+        if (input) input.value = '';
+        await renderListsDashboard();
+        await handleSelectList(shoppingService.currentListId, name);
+        showToast(`Board "${name}" created successfully!`, 'success');
+    } catch (err) {
+        showToast(err.message || "Failed to create board", "error");
+    }
 }
 
 async function handleAddItem() {
@@ -303,10 +314,10 @@ export async function initShoppingModule() {
         `;
     }
 
-    document.getElementById('createListBtn').addEventListener('click', handleCreateList);
-    document.getElementById('addItemBtn').addEventListener('click', handleAddItem);
-    document.getElementById('cancelEditBtn').addEventListener('click', () => document.getElementById('editModal').style.display = 'none');
-    document.getElementById('saveEditBtn').addEventListener('click', saveEditItem);
+    document.getElementById('createListBtn').onclick = handleCreateList;
+    document.getElementById('addItemBtn').onclick = handleAddItem;
+    document.getElementById('cancelEditBtn').onclick = () => document.getElementById('editModal').style.display = 'none';
+    document.getElementById('saveEditBtn').onclick = saveEditItem;
 
     await refreshShoppingUI();
 }

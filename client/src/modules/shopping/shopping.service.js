@@ -1,5 +1,5 @@
 import { apiRequest } from '../../core/api.js';
-import { currentSpaceId } from '../spaces/spaces.service.js';
+import * as spacesService from '../spaces/spaces.service.js';
 
 export let currentListId = localStorage.getItem('active_board_id') 
     ? parseInt(localStorage.getItem('active_board_id')) 
@@ -15,16 +15,17 @@ export function setCurrentListId(id) {
 }
 
 export async function getAllLists() {
-    const spaceId = localStorage.getItem('active_space_id');
+    const spaceId = spacesService.currentSpaceId;
     if (!spaceId) return [];
     return await apiRequest(`/shopping/?space_id=${spaceId}`);
 }
 
 export async function createNewList(name) {
-    const spaceId = localStorage.getItem('active_space_id');
+    const spaceId = spacesService.currentSpaceId;
     if (!spaceId) throw new Error("You have to select or create new space first!");
+    
     const data = await apiRequest(`/shopping/?space_id=${spaceId}`, 'POST', { name: name });
-    currentListId = data.id;
+    setCurrentListId(data.id); // <--- POPRAWIONE: Teraz poprawnie zapisuje w LocalStorage
     return data;
 }
 
