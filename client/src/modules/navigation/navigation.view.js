@@ -27,24 +27,26 @@ export const navigationView = {
 
                 <div id="shopping-sidebar-slot" style="flex: 1; display: flex; flex-direction: column; overflow-y: auto;"></div>
                 
-                <div class="sidebar-footer" style="margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                    <div class="user-info" style="display: flex; align-items: center; gap: 8px; min-width: 0;">
-                        <div class="avatar" style="width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 13px;">
+                <div class="sidebar-footer" style="margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px;">
+                    <div id="triggerAccountModal" style="display: flex; align-items: center; gap: 10px; min-width: 0; cursor: pointer; padding: 6px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.04)'" onmouseout="this.style.background='transparent'">
+                        <div class="avatar" id="sidebarAvatar" style="width: 36px; height: 36px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 14px; border: 2px solid var(--border);">
                             ${userInitials}
                         </div>
-                        <div style="display: flex; flex-direction: column; min-width: 0;">
-                            <span style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); line-height: 1.2;">
+                        <div style="display: flex; flex-direction: column; min-width: 0; flex: 1;">
+                            <span id="sidebarDisplayName" style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); line-height: 1.2;">
                                 ${displayName}
                             </span>
-                            <span style="font-size: 11px; color: var(--muted); line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            <span id="sidebarHandle" style="font-size: 11px; color: var(--muted); line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                 @${handle}
                             </span>
                         </div>
+                        <div class="settings-btn">
+                            <span class="btn-secondary" style="padding: 6px 8px; font-size: 13px;" >⚙️</span>
+                        </div>
                     </div>
-                    <div class="footer-actions" style="display: flex; gap: 4px; flex-shrink: 0;">
-                        <button id="navBtnAccountSettings" class="btn-secondary" style="padding: 6px 8px; font-size: 13px;" title="Account Settings">⚙️</button>
-                        <button id="navBtnLogout" class="delete-btn" style="padding: 6px 8px; font-size: 13px;" title="Logout">🚪</button>
-                    </div>
+                    <button id="navBtnLogout" class="delete-btn w-100" style="padding: 8px; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <span>Logout</span>
+                    </button>
                 </div>
             </div>
 
@@ -66,17 +68,37 @@ export const navigationView = {
             <div id="accountSettingsModal" class="modal" style="display: none;">
                 <div class="modal-content-card">
                     <h3>⚙️ Account Settings</h3>
-                    <p class="text-muted font-sm">Profile: <strong>${displayName}</strong> <span style="font-size: 12px; color: var(--muted);">(@${handle})</span></p>
                     
-                    <div style="margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.02); border-radius: 6px; border: 1px dashed var(--border);">
-                        <p style="margin: 0; font-size: 13px; text-align: center;" class="text-muted">
-                            ⚙️ Account editing module is prepared for future extension (changing display name, updating @handle, or security keys).
-                        </p>
+                    <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 12px;">
+                        <div>
+                            <label class="modal-label" style="font-weight:600; font-size:13px;">Display Name</label>
+                            <input type="text" id="accEditDisplayName" class="input-field w-100" value="${displayName}">
+                        </div>
+                        <div>
+                            <label class="modal-label" style="font-weight:600; font-size:13px;">Username (@handle)</label>
+                            <input type="text" id="accEditHandle" class="input-field w-100" value="${handle}">
+                        </div>
+                        <button id="btnSaveAccountDetails" class="btn-primary" style="padding: 8px; font-size:13px; align-self: flex-end;">Save Profile</button>
+                    </div>
+
+                    <hr style="border:0; border-top:1px solid var(--border); margin: 15px 0;">
+
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <h4 style="margin: 0; font-size: 14px;">Security & Password</h4>
+                        <div>
+                            <label class="modal-label" style="font-size:12px;">Current Password</label>
+                            <input type="password" id="accCurrentPassword" class="input-field w-100" placeholder="••••••••">
+                        </div>
+                        <div>
+                            <label class="modal-label" style="font-size:12px;">New Password</label>
+                            <input type="password" id="accNewPassword" class="input-field w-100" placeholder="Minimum 6 characters">
+                        </div>
+                        <button id="btnSaveAccountPassword" class="btn-primary" style="padding: 8px; font-size:13px; align-self: flex-end;">Update Password</button>
                     </div>
                     
                     <hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;">
                     <div class="modal-actions">
-                        <button id="closeAccountModalBtn" class="w-100">Close</button>
+                        <button id="closeAccountModalBtn" class="w-100 delete-btn cancel-btn">Close</button>
                     </div>
                 </div>
             </div>
@@ -99,7 +121,7 @@ export const navigationView = {
 
         if (spaces.length === 0) {
             container.innerHTML = `<button id="navCreateSpaceBtn" class="btn-success w-100" style="padding: 6px; font-size: 13px;">+ Create Space</button>`;
-            document.getElementById('navCreateSpaceBtn').addEventListener('click', () => this.handleCreateSpace());
+            document.getElementById('navCreateSpaceBtn').onclick = () => this.handleCreateSpace();
             this.toggleManageButton(false);
             return;
         }
@@ -127,7 +149,7 @@ export const navigationView = {
             await initShoppingModule();
         });
 
-        document.getElementById('navCreateSpaceBtn').addEventListener('click', () => this.handleCreateSpace());
+        document.getElementById('navCreateSpaceBtn').onclick = () => this.handleCreateSpace();
     },
 
     toggleManageButton(show) {
@@ -153,13 +175,11 @@ export const navigationView = {
         if (!modal || !actionsContainer) return;
 
         const currentSpaceId = spacesService.currentSpaceId;
-
         actionsContainer.innerHTML = `<p class="text-muted" style="font-size: 13px; text-align: center; padding: 10px;">Loading space data...</p>`;
         modal.style.display = 'flex';
 
         try {
             const members = await spacesService.fetchSpaceMembers(currentSpaceId);
-
             let spaces = spacesService.spacesList;
             if (!spaces || spaces.length === 0) {
                 spaces = await spacesService.fetchUserSpaces();
@@ -172,7 +192,7 @@ export const navigationView = {
                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px; background: rgba(0,0,0,0.02); border-radius: 6px; margin-bottom: 6px; border: 1px solid var(--border);">
                         <div style="display: flex; flex-direction: column; min-width: 0; padding-right: 8px;">
                             <span style="font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                ${member.display_name} ${member.is_owner ? '' : ''}
+                                ${member.display_name}
                             </span>
                             <span style="font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@${member.username}</span>
                         </div>
@@ -187,19 +207,16 @@ export const navigationView = {
 
             actionsContainer.innerHTML = `
                 <p>Managing space: <strong id="modalSpaceName">${spaceName}</strong></p>
-
                 <label class="modal-label" style="font-size: 13px; font-weight: 600;">Edit space name:</label>
                 <div style="display: flex; gap: 8px; margin-top: 5px; margin-bottom: 15px;">
                     <input type="text" id="modalEditNameInput" class="input-field" placeholder="New name...">
                     <button id="modalEditNameBtn" class="btn-primary">Edit</button>
                 </div>
-
                 <div style="margin-top: 15px;">
                     <label class="modal-label" style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 5px;">Current Members:</label>
                     <div id="modalMembersList" style="max-height: 160px; overflow-y: auto; margin-bottom: 15px; padding-right: 2px;">
                         ${membersListHtml || '<p class="text-muted" style="font-size: 12px;">No members found.</p>'}
                     </div>
-                    
                     <label class="modal-label" style="font-size: 13px; font-weight: 600;">Add user to this space:</label>
                     <div style="display: flex; gap: 8px; margin-top: 5px;">
                         <input type="text" id="modalInviteInput" class="input-field" placeholder="Username (nick)...">
@@ -211,114 +228,145 @@ export const navigationView = {
                 </div>
             `;
 
-            document.querySelectorAll('.kick-member-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const button = e.currentTarget;
-                    const userId = button.getAttribute('data-user-id');
-                    const targetUsername = button.getAttribute('data-username');
-                    
-                    if (!confirm(`Are you sure you want to remove @${targetUsername} from this space?`)) return;
-                    
-                    try {
-                        button.disabled = true;
-                        await spacesService.removeMemberFromSpace(currentSpaceId, userId);
-                        showToast(`User @${targetUsername} removed.`, "info");
-                        this.openManagementModal();
-                    } catch (err) {
-                        button.disabled = false;
-                        showToast(err.message || "Failed to remove member", "error");
-                    }
-                });
-            });
-
-            document.getElementById('modalInviteBtn').addEventListener('click', async (e) => {
-                const button = e.currentTarget;
-                const username = document.getElementById('modalInviteInput').value.trim();
-                if (!username) return showToast("Enter username!", "error");
-                try {
-                    button.disabled = true;
-                    await spacesService.addMemberToSpace(currentSpaceId, username);
-                    showToast(`User ${username} added!`, "success");
-                    this.openManagementModal(); 
-                } catch (e) {
-                    button.disabled = false;
-                }
-            });
-
-            document.getElementById('modalEditNameBtn').addEventListener('click', async (e) => {
-                const button = e.currentTarget;
-                const new_name = document.getElementById('modalEditNameInput').value.trim();
-                if (!new_name) return showToast("Enter new space name!", "error");
-                try {
-                    button.disabled = true;
-                    await spacesService.editSpaceName(currentSpaceId, new_name);
-                    showToast(`Space name edited successfully!`, "success");
-                    document.getElementById('modalEditNameInput').value = '';
-                    document.getElementById("modalSpaceName").textContent = new_name;
-                    await this.renderSpacesControl();
-                    button.disabled = false;
-                } catch (e) {
-                    button.disabled = false;
-                }
-            });
-
-            document.getElementById('modalDeleteSpaceBtn').addEventListener('click', async (e) => {
-                const button = e.currentTarget;
-                if (!confirm("Delete or leave this space? Structural boards inside will be lost.")) return;
-                try {
-                    button.disabled = true;
-                    await spacesService.deleteSpace(currentSpaceId);
-                    shoppingService.setCurrentListId(null);
-                    modal.style.display = 'none';
-                    
-                    await this.renderSpacesControl();
-                    const { initShoppingModule } = await import('../shopping/shopping.view.js');
-                    await initShoppingModule();
-                    showToast("Space removed", "info");
-                } catch (e) {
-                    button.disabled = false;
-                }
-            });
-
+            this.bindSpaceModalEvents(currentSpaceId, modal);
         } catch (error) {
             actionsContainer.innerHTML = `<p style="color: var(--danger); font-size: 13px; text-align: center;">Error loading workspace members.</p>`;
         }
     },
 
+    bindSpaceModalEvents(currentSpaceId, modal) {
+        document.querySelectorAll('.kick-member-btn').forEach(btn => {
+            btn.onclick = async (e) => {
+                const button = e.currentTarget;
+                const userId = button.getAttribute('data-user-id');
+                const targetUsername = button.getAttribute('data-username');
+                if (!confirm(`Are you sure you want to remove @${targetUsername} from this space?`)) return;
+                try {
+                    button.disabled = true;
+                    await spacesService.removeMemberFromSpace(currentSpaceId, userId);
+                    showToast(`User @${targetUsername} removed.`, "info");
+                    this.openManagementModal();
+                } catch (err) {
+                    button.disabled = false;
+                    showToast(err.message || "Failed to remove member", "error");
+                }
+            };
+        });
+
+        document.getElementById('modalInviteBtn').onclick = async (e) => {
+            const button = e.currentTarget;
+            const username = document.getElementById('modalInviteInput').value.trim();
+            if (!username) return showToast("Enter username!", "error");
+            try {
+                button.disabled = true;
+                await spacesService.addMemberToSpace(currentSpaceId, username);
+                showToast(`User ${username} added!`, "success");
+                this.openManagementModal(); 
+            } catch (e) {
+                button.disabled = false;
+            }
+        };
+
+        document.getElementById('modalEditNameBtn').onclick = async (e) => {
+            const button = e.currentTarget;
+            const new_name = document.getElementById('modalEditNameInput').value.trim();
+            if (!new_name) return showToast("Enter new space name!", "error");
+            try {
+                button.disabled = true;
+                await spacesService.editSpaceName(currentSpaceId, new_name);
+                showToast(`Space name edited successfully!`, "success");
+                document.getElementById('modalEditNameInput').value = '';
+                document.getElementById("modalSpaceName").textContent = new_name;
+                await this.renderSpacesControl();
+                button.disabled = false;
+            } catch (e) {
+                button.disabled = false;
+            }
+        };
+
+        document.getElementById('modalDeleteSpaceBtn').onclick = async (e) => {
+            const button = e.currentTarget;
+            if (!confirm("Delete or leave this space? Structural boards inside will be lost.")) return;
+            try {
+                button.disabled = true;
+                await spacesService.deleteSpace(currentSpaceId);
+                shoppingService.setCurrentListId(null);
+                modal.style.display = 'none';
+                await this.renderSpacesControl();
+                const { initShoppingModule } = await import('../shopping/shopping.view.js');
+                await initShoppingModule();
+                showToast("Space removed", "info");
+            } catch (e) {
+                button.disabled = false;
+            }
+        };
+    },
+
     initEvents() {
         initResponsive();
 
-        const logoutBtn = document.getElementById('navBtnLogout');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                if (confirm('Are you sure you want to logout?')) {
-                    authService.logout();
-                }
-            });
-        }
+        document.getElementById('navBtnLogout').onclick = () => {
+            if (confirm('Are you sure you want to logout?')) {
+                authService.logout();
+            }
+        };
 
-        const manageBtn = document.getElementById('navBtnManageSpace');
-        if (manageBtn) {
-            manageBtn.addEventListener('click', () => this.openManagementModal());
-        }
+        document.getElementById('navBtnManageSpace').onclick = () => this.openManagementModal();
+        document.getElementById('closeSpaceModalBtn').onclick = () => {
+            document.getElementById('spaceManagementModal').style.display = 'none';
+        };
 
-        const closeModalBtn = document.getElementById('closeSpaceModalBtn');
-        if (closeSpaceModalBtn) {
-            closeModalBtn.addEventListener('click', () => {
-                document.getElementById('spaceManagementModal').style.display = 'none';
-            });
-        }
-        const accountBtn = document.getElementById('navBtnAccountSettings');
-        if (accountBtn) {
-            accountBtn.addEventListener('click', () => {
-                document.getElementById('accountSettingsModal').style.display = 'flex';
-            });
-        }
-        const closeAccountModalBtn = document.getElementById('closeAccountModalBtn');
-        if (closeAccountModalBtn) {
-            closeAccountModalBtn.addEventListener('click', () => {
-                document.getElementById('accountSettingsModal').style.display = 'none';
-            });
-        }
+        document.getElementById('triggerAccountModal').onclick = () => {
+            document.getElementById('accountSettingsModal').style.display = 'flex';
+        };
+        document.getElementById('closeAccountModalBtn').onclick = () => {
+            document.getElementById('accountSettingsModal').style.display = 'none';
+        };
+
+        document.getElementById('btnSaveAccountDetails').onclick = async (e) => {
+            const btn = e.currentTarget;
+            const dName = document.getElementById('accEditDisplayName').value.trim();
+            const handle = document.getElementById('accEditHandle').value.trim().replace('@', '');
+
+            if (!dName || !handle) return showToast("Fields cannot be empty!", "error");
+
+            try {
+                btn.disabled = true;
+                await authService.updateProfileDetails(dName, handle);
+                
+                document.getElementById('sidebarDisplayName').textContent = dName;
+                document.getElementById('sidebarHandle').textContent = `@${handle}`;
+                document.getElementById('sidebarAvatar').textContent = dName.substring(0, 2).toUpperCase();
+
+                showToast("Profile updated successfully!", "success");
+            } catch (err) {
+                showToast(err.message || "Failed to update profile", "error");
+            } finally {
+                btn.disabled = false;
+            }
+        };
+
+        document.getElementById('btnSaveAccountPassword').onclick = async (e) => {
+            const btn = e.currentTarget;
+            const currentPwd = document.getElementById('accCurrentPassword').value;
+            const newPwd = document.getElementById('accNewPassword').value;
+
+            if (!currentPwd || !newPwd) return showToast("Enter both current and new password!", "error");
+            if (newPwd.length < 6) return showToast("New password must be at least 6 characters long!", "error");
+
+            try {
+                btn.disabled = true;
+                await authService.updatePassword(currentPwd, newPwd);
+                document.getElementById('accCurrentPassword').value = '';
+                document.getElementById('accNewPassword').value = '';
+                showToast("Password updated successfully!", "success");
+            } catch (err) {
+                showToast(err.message || "Failed to update password", "error");
+            } finally {
+                btn.disabled = false;
+            }
+        };
     }
 };
+
+

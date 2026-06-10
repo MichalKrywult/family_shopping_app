@@ -84,3 +84,23 @@ export const authService = {
         return payload && payload.username ? payload.username : '';
     }
 };
+
+
+export async function updateProfileDetails(displayName, handle) {
+    const updatedUser = await apiRequest('/auth/profile', 'PUT', {
+        display_name: displayName,
+        username: handle
+    });
+
+    localStorage.setItem('user_display_name', updatedUser.display_name);
+    localStorage.setItem('user_handle', updatedUser.username);
+
+    return updatedUser;
+}
+
+export async function updatePassword(currentPassword, newPassword) {
+    return await apiRequest('/auth/profile/password', 'PUT', {
+        current_password: currentPassword,
+        new_password: newPassword
+    });
+}

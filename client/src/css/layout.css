@@ -26,6 +26,24 @@
     display: none;
 }
 
+.settings-btn {
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    color: white;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    font-size: 16px;
+}
+
+.settings-btn:hover {
+    background: var(--primary-hover);
+}
+
 @media (max-width: 768px) {
     body {
         flex-direction: column;
