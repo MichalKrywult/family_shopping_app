@@ -1,4 +1,5 @@
 import { authService } from './auth.service.js';
+import { showToast } from '../../shared/toast.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     if (authService.isLoggedIn()) {
@@ -26,11 +27,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const success = await authService.login(username, password);
-            if (success) {
-                window.location.href = './index.html';
+
+            if (!success) {
+                showToast("Invalid username or password", "error");
+            } else {
+                window.location.href = "./index.html";
             }
         } catch (error) {
-            console.error("Login error:", error);
+            showToast(error.message || "Login failed", "error");
         }
     });
 
@@ -43,11 +47,12 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await authService.register(username, password, email);
             const success = await authService.login(username, password);
+
             if (success) {
-                window.location.href = './index.html';
+                window.location.href = "./index.html";
             }
         } catch (error) {
-            console.error("Register error:", error);
+            showToast(error.message || "Registration failed", "error");
         }
     });
 });

@@ -1,4 +1,3 @@
-import { showToast } from '../shared/toast.js'; 
 const API_URL = "";
 
 export async function apiRequest(endpoint, method = "GET", body = null, isFormData = false) {
@@ -48,7 +47,6 @@ export async function apiRequest(endpoint, method = "GET", body = null, isFormDa
 
     } catch (error) {
         console.error("API Error:", error);
-        showToast(`Connection error: ${error.message}`, 'error');
         throw error;
     }
 }

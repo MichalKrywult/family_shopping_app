@@ -25,7 +25,7 @@ export async function createNewList(name) {
     if (!spaceId) throw new Error("You have to select or create new space first!");
     
     const data = await apiRequest(`/shopping/?space_id=${spaceId}`, 'POST', { name: name });
-    setCurrentListId(data.id); // <--- POPRAWIONE: Teraz poprawnie zapisuje w LocalStorage
+    setCurrentListId(data.id); 
     return data;
 }
 

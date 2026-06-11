@@ -210,3 +210,13 @@ hr {
     }
     .toast-message { max-width: 100%; }
 }
+
+@keyframes toastOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
