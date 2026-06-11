@@ -10,6 +10,11 @@ from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from fastapi.responses import RedirectResponse, FileResponse
 
+# Do not delete this or bad things will happen (probably)
+from app.auth import models as auth_models  # noqa
+from app.spaces import models as spaces_models  # noqa
+from app.shopping import models as shopping_models  # noqa
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

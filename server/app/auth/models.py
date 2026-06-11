@@ -1,10 +1,11 @@
 from typing import List, Optional, ClassVar, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
-from app.spaces.models import UserSpaceLink
+
 
 if TYPE_CHECKING:
     from app.shopping.models import Item
     from app.spaces.models import Space
+    from app.spaces.models import UserSpaceLink  # noqa
 
 
 class User(SQLModel, table=True):
@@ -24,7 +25,7 @@ class User(SQLModel, table=True):
     )
 
     spaces: List["Space"] = Relationship(
-        back_populates="members", link_model=UserSpaceLink
+        back_populates="members", link_model="UserSpaceLink"
     )
 
 
@@ -32,6 +33,7 @@ class UserCreate(SQLModel):
     username: str
     password: str
     email: Optional[str] = None
+
 
 class ProfileUpdate(SQLModel):
     display_name: Optional[str] = None
