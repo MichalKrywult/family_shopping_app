@@ -18,33 +18,27 @@ export const navigationView = {
             </div>
 
             <div class="sidebar">
-                <div class="space-header-zone" style="padding-bottom: 15px; border-bottom: 1px solid var(--border); margin-bottom: 15px;">
+                <div class="space-header-zone">
                     <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                         <div id="spaceDropdownWrapper" style="flex: 1;"></div>
-                        <button id="navBtnManageSpace" class="btn-secondary font-sm" style="padding: 5px 8px; font-size: 12px;" title="Manage Space Members">⚙️ Space</button>
+                        <button id="navBtnManageSpace" class="btn-secondary font-sm" title="Manage Space Members">⚙️ Space</button>
                     </div>
                 </div>
 
                 <div id="shopping-sidebar-slot" style="flex: 1; display: flex; flex-direction: column; overflow-y: auto;"></div>
                 
-                <div class="sidebar-footer" style="margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px;">
-                    <div id="triggerAccountModal" style="display: flex; align-items: center; gap: 10px; min-width: 0; cursor: pointer; padding: 6px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.04)'" onmouseout="this.style.background='transparent'">
-                        <div class="avatar" id="sidebarAvatar" style="width: 36px; height: 36px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 14px; border: 2px solid var(--border);">
-                            ${userInitials}
+                <div class="sidebar-footer">
+                    <div id="triggerAccountModal" class="user-profile-trigger">
+                        <div class="avatar" id="sidebarAvatar">${userInitials}</div>
+                        <div class="user-meta">
+                            <span id="sidebarDisplayName" class="user-display-name">${displayName}</span>
+                            <span id="sidebarHandle" class="user-handle">@${handle}</span>
                         </div>
-                        <div style="display: flex; flex-direction: column; min-width: 0; flex: 1;">
-                            <span id="sidebarDisplayName" style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); line-height: 1.2;">
-                                ${displayName}
-                            </span>
-                            <span id="sidebarHandle" style="font-size: 11px; color: var(--muted); line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                @${handle}
-                            </span>
-                        </div>
-                        <div class="settings-btn">
-                            <span class="btn-secondary" style="padding: 6px 8px; font-size: 13px;" >⚙️</span>
+                        <div>
+                            <button class="text-muted" style="font-size: 12px; color: #ffffff;">⚙️</button>
                         </div>
                     </div>
-                    <button id="navBtnLogout" class="delete-btn w-100" style="padding: 8px; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <button id="navBtnLogout" class="delete-btn w-100">
                         <span>Logout</span>
                     </button>
                 </div>
@@ -54,51 +48,51 @@ export const navigationView = {
                 <div class="container" id="shopping-main-slot"></div>
             </div>
 
-            <div id="spaceManagementModal" class="modal" style="display: none;">
+            <div id="spaceManagementModal" class="modal">
                 <div class="modal-content-card">
                     <h3>👥 Space Settings</h3>
                     <div id="modalSpaceActions"></div>
-                    <hr style="border:0; border-top:1px solid var(--border); margin: 15px 0;">
+                    <hr>
                     <div class="modal-actions">
-                        <button id="closeSpaceModalBtn" class="w-100">Close</button>
+                        <button id="closeSpaceModalBtn" class="w-100 btn-secondary">Close</button>
                     </div>
                 </div>
             </div>
 
-            <div id="accountSettingsModal" class="modal" style="display: none;">
+            <div id="accountSettingsModal" class="modal">
                 <div class="modal-content-card">
                     <h3>⚙️ Account Settings</h3>
                     
                     <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 12px;">
                         <div>
-                            <label class="modal-label" style="font-weight:600; font-size:13px;">Display Name</label>
-                            <input type="text" id="accEditDisplayName" class="input-field w-100" value="${displayName}">
+                            <label class="modal-label">Display Name</label>
+                            <input type="text" id="accEditDisplayName" class="input-field" value="${displayName}">
                         </div>
                         <div>
-                            <label class="modal-label" style="font-weight:600; font-size:13px;">Username (@handle)</label>
-                            <input type="text" id="accEditHandle" class="input-field w-100" value="${handle}">
+                            <label class="modal-label">Username (@handle)</label>
+                            <input type="text" id="accEditHandle" class="input-field" value="${handle}">
                         </div>
-                        <button id="btnSaveAccountDetails" class="btn-primary" style="padding: 8px; font-size:13px; align-self: flex-end;">Save Profile</button>
+                        <button id="btnSaveAccountDetails" class="btn-primary" style="align-self: flex-end;">Save Profile</button>
                     </div>
 
-                    <hr style="border:0; border-top:1px solid var(--border); margin: 15px 0;">
+                    <hr>
 
                     <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <h4 style="margin: 0; font-size: 14px;">Security & Password</h4>
+                        <h4>Security & Password</h4>
                         <div>
-                            <label class="modal-label" style="font-size:12px;">Current Password</label>
-                            <input type="password" id="accCurrentPassword" class="input-field w-100" placeholder="••••••••">
+                            <label class="modal-label">Current Password</label>
+                            <input type="password" id="accCurrentPassword" class="input-field" placeholder="••••••••">
                         </div>
                         <div>
-                            <label class="modal-label" style="font-size:12px;">New Password</label>
-                            <input type="password" id="accNewPassword" class="input-field w-100" placeholder="Minimum 6 characters">
+                            <label class="modal-label">New Password</label>
+                            <input type="password" id="accNewPassword" class="input-field" placeholder="Minimum 6 characters">
                         </div>
-                        <button id="btnSaveAccountPassword" class="btn-primary" style="padding: 8px; font-size:13px; align-self: flex-end;">Update Password</button>
+                        <button id="btnSaveAccountPassword" class="btn-primary" style="align-self: flex-end;">Update Password</button>
                     </div>
                     
-                    <hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;">
+                    <hr>
                     <div class="modal-actions">
-                        <button id="closeAccountModalBtn" class="w-100 delete-btn cancel-btn">Close</button>
+                        <button id="closeAccountModalBtn" class="w-100 cancel-btn">Close</button>
                     </div>
                 </div>
             </div>
