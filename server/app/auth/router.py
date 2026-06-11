@@ -8,6 +8,7 @@ from app.auth import service as auth_service
 from app.auth.models import User, UserCreate
 from app.core.config import settings
 from app.core.database import get_session
+from app.auth.models import ProfileUpdate, PasswordUpdate
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -91,3 +92,59 @@ def login_for_access_token(
         "access_token": access_token,
         "token_type": "bearer",
     }
+
+
+@router.put("/profile")
+def update_profile_details(
+    profile_data: ProfileUpdate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(auth_service.get_current_user),
+):
+    """Update current user's profile details (display name and username)."""
+
+    if profile_data.username and profile_data.username != current_user.username:
+        statement = select(User).where(User.username == profile_data.username)
+        if session.exec(statement).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This username is already taken.",
+            )
+        current_user.username = profile_data.username
+
+    if profile_data.display_name is not None:
+        current_user.display_name = profile_data.display_name
+
+    session.add(current_user)
+    session.commit()
+    session.refresh(current_user)
+
+    return {
+        "username": current_user.username,
+        "display_name": current_user.display_name,
+    }
+
+
+@router.put("/profile/password")
+def update_password(
+    password_data: PasswordUpdate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(auth_service.get_current_user),
+):
+    """Update current user's password."""
+
+    if not auth_service.verify_password(
+        password_data.current_password, current_user.hashed_password
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect current password.",
+        )
+
+    current_user.hashed_password = auth_service.get_password_hash(
+        password_data.new_password
+    )
+
+    session.add(current_user)
+    session.commit()
+
+    return {"message": "Password updated successfully."}

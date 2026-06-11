@@ -318,14 +318,15 @@ export const navigationView = {
         };
 
         document.getElementById('btnSaveAccountDetails').onclick = async (e) => {
-            const btn = e.currentTarget;
-            const dName = document.getElementById('accEditDisplayName').value.trim();
-            const handle = document.getElementById('accEditHandle').value.trim().replace('@', '');
+        const btn = e.currentTarget;
+        const dName = document.getElementById('accEditDisplayName').value.trim();
+        const handle = document.getElementById('accEditHandle').value.trim().replace('@', '');
 
-            if (!dName || !handle) return showToast("Fields cannot be empty!", "error");
+        if (!dName || !handle) return showToast("Fields cannot be empty!", "error");
 
-            try {
+        try {
                 btn.disabled = true;
+                
                 await authService.updateProfileDetails(dName, handle);
                 
                 document.getElementById('sidebarDisplayName').textContent = dName;
@@ -342,17 +343,22 @@ export const navigationView = {
 
         document.getElementById('btnSaveAccountPassword').onclick = async (e) => {
             const btn = e.currentTarget;
-            const currentPwd = document.getElementById('accCurrentPassword').value;
-            const newPwd = document.getElementById('accNewPassword').value;
+            const currentPwdInput = document.getElementById('accCurrentPassword');
+            const newPwdInput = document.getElementById('accNewPassword');
 
-            if (!currentPwd || !newPwd) return showToast("Enter both current and new password!", "error");
-            if (newPwd.length < 6) return showToast("New password must be at least 6 characters long!", "error");
-
+            if (!currentPwdInput.value || !newPwdInput.value) {
+                return showToast("Enter both current and new password!", "error");
+            }
+            
             try {
                 btn.disabled = true;
-                await authService.updatePassword(currentPwd, newPwd);
-                document.getElementById('accCurrentPassword').value = '';
-                document.getElementById('accNewPassword').value = '';
+                
+                await authService.updatePassword(currentPwdInput.value, newPwdInput.value);
+                
+
+                currentPwdInput.value = '';
+                newPwdInput.value = '';
+                
                 showToast("Password updated successfully!", "success");
             } catch (err) {
                 showToast(err.message || "Failed to update password", "error");

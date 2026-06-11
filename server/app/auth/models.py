@@ -32,3 +32,12 @@ class UserCreate(SQLModel):
     username: str
     password: str
     email: Optional[str] = None
+
+class ProfileUpdate(SQLModel):
+    display_name: Optional[str] = None
+    username: Optional[str] = None
+
+
+class PasswordUpdate(SQLModel):
+    current_password: str
+    new_password: str

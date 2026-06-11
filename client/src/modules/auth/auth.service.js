@@ -32,8 +32,11 @@ export const authService = {
         }
         return false;
     },
+
     logout() {
         localStorage.removeItem('shopping_app_token');
+        localStorage.removeItem('user_display_name'); 
+        localStorage.removeItem('user_handle');       
         window.location.reload();
     },
 
@@ -44,7 +47,6 @@ export const authService = {
         const token = localStorage.getItem('shopping_app_token');
         return !!token && token!== "undefined" && token !== "";
     },
-
 
     /**
      *decoding JWT token payload
@@ -82,25 +84,45 @@ export const authService = {
     getCurrentHandle() {
         const payload = this.getTokenPayload();
         return payload && payload.username ? payload.username : '';
+    },
+    /**
+     * @returns {string}
+     */
+    getCurrentDisplayName() {
+        const localName = localStorage.getItem('user_display_name');
+        if (localName) return localName;
+
+        const payload = this.getTokenPayload();
+        return payload && payload.display_name ? payload.display_name : 'Profile';
+    },
+
+    /**
+     * @returns {string}
+     */
+    getCurrentHandle() {
+        const localHandle = localStorage.getItem('user_handle');
+        if (localHandle) return localHandle;
+
+        const payload = this.getTokenPayload();
+        return payload && payload.username ? payload.username : '';
+    },
+
+    async updateProfileDetails(displayName, handle) {
+        const updatedUser = await apiRequest('/auth/profile', 'PUT', {
+            display_name: displayName,
+            username: handle
+        });
+
+        localStorage.setItem('user_display_name', updatedUser.display_name);
+        localStorage.setItem('user_handle', updatedUser.username);
+
+        return updatedUser;
+    },
+
+    async updatePassword(currentPassword, newPassword) {
+        return await apiRequest('/auth/profile/password', 'PUT', {
+            current_password: currentPassword,
+            new_password: newPassword
+        });
     }
 };
-
-
-export async function updateProfileDetails(displayName, handle) {
-    const updatedUser = await apiRequest('/auth/profile', 'PUT', {
-        display_name: displayName,
-        username: handle
-    });
-
-    localStorage.setItem('user_display_name', updatedUser.display_name);
-    localStorage.setItem('user_handle', updatedUser.username);
-
-    return updatedUser;
-}
-
-export async function updatePassword(currentPassword, newPassword) {
-    return await apiRequest('/auth/profile/password', 'PUT', {
-        current_password: currentPassword,
-        new_password: newPassword
-    });
-}
