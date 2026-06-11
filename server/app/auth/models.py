@@ -1,11 +1,18 @@
+from datetime import datetime
 from typing import List, Optional, ClassVar, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
-
 
 if TYPE_CHECKING:
     from app.shopping.models import Item
     from app.spaces.models import Space
-    from app.spaces.models import UserSpaceLink  # noqa
+
+
+class UserSpaceLink(SQLModel, table=True):
+    __tablename__: ClassVar[str] = "user_space_links"
+
+    user_id: int = Field(foreign_key="users.id", primary_key=True)
+    space_id: int = Field(foreign_key="spaces.id", primary_key=True)
+    joined_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 class User(SQLModel, table=True):
@@ -25,7 +32,7 @@ class User(SQLModel, table=True):
     )
 
     spaces: List["Space"] = Relationship(
-        back_populates="members", link_model="UserSpaceLink"
+        back_populates="members", link_model=UserSpaceLink
     )
 
 
