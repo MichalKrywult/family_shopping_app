@@ -4,6 +4,7 @@ import { authService } from '../auth/auth.service.js';
 import * as spacesService from '../spaces/spaces.service.js';
 import * as shoppingService from '../shopping/shopping.service.js';
 import { showToast } from '../../shared/toast.js';
+import { initThemeToggle } from '../../shared/motive.js';
 
 export const navigationView = {
     async render() {
@@ -91,6 +92,9 @@ export const navigationView = {
                     </div>
                     
                     <hr>
+                        <div><button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode">🌙</button></div>
+                    <hr>
+
                     <div class="modal-actions">
                         <button id="closeAccountModalBtn" class="w-100 cancel-btn">Close</button>
                     </div>
@@ -298,7 +302,8 @@ export const navigationView = {
 
     initEvents() {
         initResponsive();
-
+        initThemeToggle();
+        
         document.getElementById('navBtnLogout').onclick = () => {
             if (confirm('Are you sure you want to logout?')) {
                 authService.logout();

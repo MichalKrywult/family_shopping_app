@@ -23,6 +23,39 @@
     --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.05);
 }
 
+body.dark-mode {
+    --primary: #2ecc71;
+    --primary-hover: #27ae60;
+    --primary-muted: rgba(46, 204, 113, 0.15);
+    
+    --danger: #ff4d4d;
+    --danger-hover: #ff3333;
+    --danger-muted: rgba(255, 77, 77, 0.15);
+    
+    --secondary: #a0aec0;
+    --secondary-hover: #cbd5e0;
+    
+    --bg: #0f172a;
+    --surface: #1e293b;
+    
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --border: #334155;
+    
+    --shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .input-field, 
+body.dark-mode .auth-card input {
+    background: #1e293b !important;
+}
+
+body.dark-mode .input-field:focus, 
+body.dark-mode .auth-card input:focus {
+    background: #0f172a !important;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -89,8 +122,8 @@ button:hover,
 .btn-primary { background: var(--primary); color: white; }
 .btn-primary:hover { background: var(--primary-hover); }
 
-.btn-secondary { background: #2fb340; color: #ffffff; }
-.btn-secondary:hover { background: #cbd5e0; }
+.btn-secondary { background: var(--secondary); color: white; }
+.btn-secondary:hover { background: var(--secondary-hover); }
 
 .btn-success { background: var(--primary); color: white; }
 

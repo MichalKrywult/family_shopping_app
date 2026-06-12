@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>Register/Login</title>
-    <meta name="theme-color" content="#28a745">
+    <meta name="theme-color" content="#28a745" id="meta-theme-color">
+
     <link rel="icon" type="image/x-icon" href="public/assets/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./src/css/auth.css">
+    
     <link rel="stylesheet" href="./src/css/style.css">
+    <link rel="stylesheet" href="./src/css/auth.css">
 </head>
 <body>
+
+    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode">🌙</button>
 
     <div id="toastContainer" class="toast-container"></div>
 
@@ -43,5 +47,9 @@
     </div>
 
     <script type="module" src="./src/modules/auth/auth.view.js"></script>
+    <script type="module">
+        import { initThemeToggle } from './src/shared/motive.js';
+        initThemeToggle();
+    </script>
 </body>
 </html>
